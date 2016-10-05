@@ -6,18 +6,21 @@ import java.util.function.Consumer;
 
 public class ArrayZipWithIndexExample {
 
-    public static class IndexedAttaySpliterator<T> extends Spliterators.AbstractSpliterator<IndexedPair<T>> {
+    public static class IndexedArraySpliterator<T> extends Spliterators.AbstractSpliterator<IndexedPair<T>> {
 
+        //[A, B, C]
+        //[D, E, F]
+        //[(A, B), (C, D), (E, F)]
 
         private final T[] array;
         private int startInclusive;
         private final int endExclusive;
 
-        public IndexedAttaySpliterator(T[] array) {
+        public IndexedArraySpliterator(T[] array) {
             this(array, 0, array.length);
         }
 
-        private IndexedAttaySpliterator(T[] array, int startInclusive, int endExclusive) {
+        private IndexedArraySpliterator(T[] array, int startInclusive, int endExclusive) {
             super(endExclusive - startInclusive,
                     Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED | Spliterator.NONNULL);
             this.array = array;
@@ -41,6 +44,7 @@ public class ArrayZipWithIndexExample {
             for (int i = startInclusive; i < endExclusive; i++) {
                 action.accept(new IndexedPair<>(i, array[i]));
             }
+            startInclusive = endExclusive;
         }
 
         @Override
@@ -49,7 +53,7 @@ public class ArrayZipWithIndexExample {
         }
 
         @Override
-        public IndexedAttaySpliterator<T> trySplit() {
+        public IndexedArraySpliterator<T> trySplit() {
             int length = endExclusive - startInclusive;
             if (length <= 1) {
                 return null;
@@ -57,7 +61,7 @@ public class ArrayZipWithIndexExample {
 
             int middle = startInclusive + length/2;
 
-            final IndexedAttaySpliterator<T> newSpliterator = new IndexedAttaySpliterator<>(array, startInclusive, middle);
+            final IndexedArraySpliterator<T> newSpliterator = new IndexedArraySpliterator<>(array, startInclusive, middle);
 
             startInclusive = middle;
 
