@@ -20,6 +20,12 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
     }
 
     @Override
+    public int characteristics() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
         boolean didAdvance = inner.tryAdvance((double value) -> action.accept(new IndexedDoublePair(currentIndex, value)));
         if (didAdvance) currentIndex++;
