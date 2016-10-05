@@ -11,7 +11,7 @@ import java.util.stream.StreamSupport;
 import static org.junit.Assert.assertEquals;
 
 public class IndexDoubleSpliteratorTest {
-    final double[] dbls = new double[100];
+    private final double[] dbls = new double[100];
 
     @Before
     public void init() {
