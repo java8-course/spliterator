@@ -9,9 +9,9 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
+    private int startOuterInclusive;
     private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -28,19 +28,44 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     }
 
     @Override
+    public boolean tryAdvance(IntConsumer action) {
+        if (startOuterInclusive < endOuterExclusive) {
+            action.accept(array[startOuterInclusive][startInnerInclusive]);
+            startOuterInclusive += 1;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        final int length = endOuterExclusive - startOuterInclusive;
+        if (length <= 1) {
+            return null;
+        }
+
+        final int middle = startOuterInclusive + length/2;
+        final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, startOuterInclusive, middle, 0);
+
+        startOuterInclusive = middle;
+
+        return newSpliterator;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
+        for ( ; startOuterInclusive < endOuterExclusive; startOuterInclusive++) {
+            for ( ; startInnerInclusive < innerLength; startInnerInclusive++) {
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
+            }
+            startInnerInclusive = 0;
+        }
     }
 
     @Override
     public long estimateSize() {
-        return ((long) endOuterExclusive - startOuterInclusive)*innerLength - startInnerInclusive;
+        return ((long) endOuterExclusive - startOuterInclusive) * innerLength - startInnerInclusive;
     }
 
-    @Override
-    public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
 }
