@@ -16,6 +16,11 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int characteristics() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
