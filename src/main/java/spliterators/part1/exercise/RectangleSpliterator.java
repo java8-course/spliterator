@@ -36,6 +36,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         }
         int middle = startOuterInclusive + length / 2;
         final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, startOuterInclusive, middle, startInnerInclusive);
+        startInnerInclusive = 0;
         startOuterInclusive = middle;
         return newSpliterator;
     }
@@ -47,25 +48,23 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        if (startInnerInclusive < innerLength) {
-            action.accept(array[startOuterInclusive][startInnerInclusive]);
-            startInnerInclusive += 1;
-            return true;
-        } else if (startOuterInclusive < endOuterExclusive - 1) {
-            startOuterInclusive += 1;
-            startInnerInclusive = 0;
-            action.accept(array[startOuterInclusive][startInnerInclusive]);
-            startInnerInclusive += 1;
-            return true;
-        } else
-            return false;
+        if (startInnerInclusive >= innerLength) {
+            if (startOuterInclusive < endOuterExclusive - 1) {
+                startOuterInclusive += 1;
+                startInnerInclusive = 0;
+            } else
+                return false;
+        }
+        action.accept(array[startOuterInclusive][startInnerInclusive]);
+        startInnerInclusive += 1;
+        return true;
     }
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        while (startOuterInclusive < endOuterExclusive - 1) {
+        while (startOuterInclusive < endOuterExclusive) {
             if (startInnerInclusive < innerLength) {
-                action.accept(array[startOuterInclusive] [startInnerInclusive]);
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
                 startInnerInclusive += 1;
             } else {
                 startOuterInclusive += 1;
