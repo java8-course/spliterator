@@ -74,5 +74,9 @@ public class ZipWithArraySpliteratorTest {
         final Spliterator<Pair<Integer, Integer>> zFrag = zSplit.trySplit();
         assertTrue(zFrag.hasCharacteristics(Spliterator.SIZED));
         assertEquals(size2, zFrag.estimateSize() + zSplit.estimateSize());
+
+        zFrag.forEachRemaining(integerIntegerPair -> {
+        });
+        assertEquals(zFrag.estimateSize(), 0);
     }
 }
