@@ -58,5 +58,7 @@ public class ZipWithArraySpliteratorTest {
         assertEquals(longerExpected, sum);
     }
 
+    //TODO: add tests to verify spliterator contract
+
 
 }

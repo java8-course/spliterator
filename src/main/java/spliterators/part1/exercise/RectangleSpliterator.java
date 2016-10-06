@@ -20,13 +20,12 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     private int currentRow;
     private int currentCol;
     private int currentIndex;
-    private boolean noMoreElements;
 
     private void setCurrentIndex(int absoluteIndex) {
-        currentRow = absoluteIndex / columnCount;
-        currentCol = absoluteIndex % columnCount;
-        currentIndex = absoluteIndex;
-        noMoreElements = absoluteIndex >= finalIndexExc;
+        currentIndex = Math.min(absoluteIndex, finalIndexExc);
+        currentRow = currentIndex / columnCount;
+        currentCol = currentIndex % columnCount;
+
     }
 
     public RectangleSpliterator(int[][] array) {
@@ -45,19 +44,17 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        if (noMoreElements) return false;
+        if (currentIndex == finalIndexExc) return false;
 
-        try {
-            action.accept(array[currentRow][currentCol]);
-        } finally {
-            if (++currentCol == columnCount) {
-                currentCol = 0;
-                currentRow++;
-            }
-            noMoreElements = (++currentIndex == finalIndexExc);
+        action.accept(array[currentRow][currentCol]);
+        currentCol++;
+        if (currentCol == columnCount) {
+            currentCol = 0;
+            currentRow++;
         }
+        currentIndex++;
         return true;
-    }
+}
 
     @Override
     public OfInt trySplit() {
