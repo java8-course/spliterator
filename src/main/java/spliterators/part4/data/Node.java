@@ -1,5 +1,6 @@
 package spliterators.part4.data;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -9,7 +10,7 @@ public class Node<T> {
     private final Node<T> right;
 
     public Node(T value, Node<T> left, Node<T> right) {
-        this.value = value;
+        this.value = Objects.requireNonNull(value);
         this.left = left;
         this.right = right;
     }
