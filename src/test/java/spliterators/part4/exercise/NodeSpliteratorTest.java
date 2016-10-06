@@ -57,13 +57,11 @@ public class NodeSpliteratorTest {
     public void trySplitTest() throws Exception {
         String expectedWalkAround = simpleWalkAroundTree(root);
 
-        Stream<String> nodeStream = root.stream();
         // Partial traverse before split
-        String part1 = collectStreamWithEndCaps(nodeStream.limit(5));
+        String part1 = collectStreamWithEndCaps(root.stream().limit(5));
 
         // Have to reset stream after each terminal operation
-        nodeStream = root.stream();
-        Spliterator<String> split = nodeStream.skip(5).spliterator().trySplit();
+        final Spliterator<String> split = root.stream().skip(5).spliterator().trySplit();
         String part2 = "";
         if (split != null) {
             System.out.println("Split OK");
