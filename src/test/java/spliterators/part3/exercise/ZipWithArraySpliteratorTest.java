@@ -3,11 +3,13 @@ package spliterators.part3.exercise;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Spliterator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ZipWithArraySpliteratorTest {
     private final Integer[] ints = randomArray(1000);
@@ -58,7 +60,19 @@ public class ZipWithArraySpliteratorTest {
         assertEquals(longerExpected, sum);
     }
 
-    //TODO: add tests to verify spliterator contract
+    @Test
+    public void testSpliteratorContract() {
+        final ZipWithArraySpliterator<Integer, Integer> zSplit = new ZipWithArraySpliterator<>(Arrays.stream(ints).spliterator(), shorter);
 
+        assertTrue(zSplit.hasCharacteristics(Spliterator.SIZED));
+        final long size1 = zSplit.estimateSize();
+        assertEquals(shorter.length, size1);
 
+        zSplit.tryAdvance(pair -> System.out.printf("%d : %d \n", pair.getA(), pair.getB()));
+        final long size2 = zSplit.estimateSize();
+        assertEquals(size1 - 1, size2);
+        final Spliterator<Pair<Integer, Integer>> zFrag = zSplit.trySplit();
+        assertTrue(zFrag.hasCharacteristics(Spliterator.SIZED));
+        assertEquals(size2, zFrag.estimateSize() + zSplit.estimateSize());
+    }
 }
