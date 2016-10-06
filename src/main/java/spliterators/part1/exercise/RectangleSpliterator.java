@@ -35,9 +35,10 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
         int middle = startOuterInclusive + length / 2;
 
-        final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, startOuterInclusive, middle, 0);
+        final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, startOuterInclusive, middle, startInnerInclusive);
 
         startOuterInclusive = middle;
+        startInnerInclusive = 0;
 
         return newSpliterator;
     }
@@ -49,27 +50,26 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        if (startInnerInclusive < innerLength) {
-            action.accept(array[startOuterInclusive][startInnerInclusive]);
-            startInnerInclusive += 1;
-            return true;
-        } else if (startOuterInclusive < endOuterExclusive - 1) {
-            startOuterInclusive += 1;
-            startInnerInclusive = 0;
-            action.accept(array[startOuterInclusive][startInnerInclusive]);
-            startInnerInclusive += 1;
-            return true;
-        } else {
-            return false;
+        if (startInnerInclusive >= innerLength) {
+            if (startOuterInclusive < endOuterExclusive - 1) {
+                startOuterInclusive += 1;
+                startInnerInclusive = 0;
+            } else {
+                return false;
+            }
         }
+        action.accept(array[startOuterInclusive][startInnerInclusive]);
+        startInnerInclusive += 1;
+        return true;
     }
 
     @Override
     public void forEachRemaining(IntConsumer action) {
         while (startOuterInclusive < endOuterExclusive) {
-            action.accept(array[startOuterInclusive][startInnerInclusive]);
-            startInnerInclusive += 1;
-            if (startInnerInclusive == innerLength) {
+            if (startInnerInclusive < innerLength) {
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
+                startInnerInclusive += 1;
+            } else {
                 startOuterInclusive += 1;
                 startInnerInclusive = 0;
             }
