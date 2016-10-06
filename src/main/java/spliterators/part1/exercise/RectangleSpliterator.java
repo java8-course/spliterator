@@ -81,13 +81,16 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        for (int i = outerFromInclusive; i < outerToExclusive; i++) {
+        int i;
+        for (i = outerFromInclusive; i < outerToExclusive; i++) {
             int currentInnerFromInclusive = i == outerFromInclusive ? innerFromInclusive : 0;
             int currentInnerToExlusive = i == outerToExclusive - 1 ? innerToExclusive : innerLength;
 
             for (int j = currentInnerFromInclusive; j < currentInnerToExlusive; j++) {
                 action.accept(array[i][j]);
+                innerFromInclusive = j;
             }
         }
+        outerFromInclusive = i;
     }
 }
