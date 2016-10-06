@@ -1,5 +1,7 @@
 package spliterators.part4.data;
 
+import spliterators.part4.exercise.NodeSpliterator;
+
 import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -28,8 +30,6 @@ public class Node<T> {
     }
 
     public Stream<T> stream() {
-        // TODO
-        throw new UnsupportedOperationException();
-        //return StreamSupport.stream(new NodeSplitertor(this));
+        return StreamSupport.stream(new NodeSpliterator<>(this), true);
     }
 }
