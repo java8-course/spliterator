@@ -14,7 +14,7 @@ import java.util.function.Consumer;
  * @param <T> Node type
  */
 public class NodeSpliterator<T> implements Spliterator<T> {
-    private final ArrayDeque<Node<T>> currentPath;
+    private ArrayDeque<Node<T>> currentPath;
 
     private void walkToLeftmost(Node<T> node) {
         Node<T> currentNode = node;
@@ -47,18 +47,28 @@ public class NodeSpliterator<T> implements Spliterator<T> {
         return true;
     }
 
+    /**
+     * Everything left of the current root node gets split off.
+     * Root node remains with the current spliterator.
+     */
     @Override
     public Spliterator<T> trySplit() {
-        return null;
+        if (currentPath.size() < 2) return null;
+
+        final Node<T> root = currentPath.removeLast();
+        final NodeSpliterator<T> newSplit = new NodeSpliterator<>(currentPath);
+        currentPath = new ArrayDeque<>();
+        currentPath.push(root);
+        return newSplit;
     }
 
     @Override
     public long estimateSize() {
-        return Long.MAX_VALUE;
+        return Long.MAX_VALUE;          // This spliterator is NOT SIZED
     }
 
     @Override
     public int characteristics() {
-        return NONNULL + ORDERED;
+        return NONNULL + ORDERED + IMMUTABLE;
     }
 }
