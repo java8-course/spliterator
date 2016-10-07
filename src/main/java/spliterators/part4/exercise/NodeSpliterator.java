@@ -11,9 +11,42 @@ import java.util.function.Consumer;
  * Spliterator for nodes of type T.
  * Walking through leftmost branch is eager (on creation, advance and each split),
  * walking through other branches is lazy.
+ *
  * @param <T> Node type
  */
 public class NodeSpliterator<T> implements Spliterator<T> {
+    private class SingleElementSpliterator implements Spliterator<T> {
+        private final T element;
+        private boolean usedUp = false;
+
+        private SingleElementSpliterator(final T element) {
+            this.element = element;
+        }
+
+        @Override
+        public boolean tryAdvance(final Consumer<? super T> action) {
+            if (usedUp) return false;
+            usedUp = true;
+            action.accept(element);
+            return true;
+        }
+
+        @Override
+        public Spliterator<T> trySplit() {
+            return null;
+        }
+
+        @Override
+        public long estimateSize() {
+            return usedUp ? 0 : 1;
+        }
+
+        @Override
+        public int characteristics() {
+            return NONNULL | ORDERED | IMMUTABLE | SIZED | SUBSIZED;
+        }
+    }
+
     private ArrayDeque<Node<T>> currentPath;
 
     private void walkToLeftmost(Node<T> node) {
@@ -53,7 +86,18 @@ public class NodeSpliterator<T> implements Spliterator<T> {
      */
     @Override
     public Spliterator<T> trySplit() {
-        if (currentPath.size() < 2) return null;
+        if (currentPath.size() < 2) {
+            if (currentPath.size() == 1) {
+                final Node<T> root = currentPath.peekLast();
+                final Node<T> rightBranch = root.getRight();
+                if (rightBranch != null) {
+                    currentPath.clear();
+                    walkToLeftmost(rightBranch);
+                    return new SingleElementSpliterator(root.getValue());
+                }
+            }
+            return null;
+        }
 
         final Node<T> root = currentPath.removeLast();
         final NodeSpliterator<T> newSplit = new NodeSpliterator<>(currentPath);
@@ -69,6 +113,6 @@ public class NodeSpliterator<T> implements Spliterator<T> {
 
     @Override
     public int characteristics() {
-        return NONNULL + ORDERED + IMMUTABLE;
+        return NONNULL | ORDERED | IMMUTABLE;
     }
 }

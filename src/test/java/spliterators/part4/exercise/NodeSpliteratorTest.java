@@ -17,7 +17,7 @@ public class NodeSpliteratorTest {
     private static final ThreadLocalRandom random = ThreadLocalRandom.current();
     private static final double CUTOFF = 0.5;
 
-    private static int numNodes;
+    private static int numNodes = 0;
 
     private static Node<String> createNodeRecursively(String current) {
         numNodes++;
@@ -33,14 +33,16 @@ public class NodeSpliteratorTest {
     }
 
     private String collectStreamWithEndCaps(Stream<String> s) {
-        return "(" + s.collect(Collectors.joining(")(")) + ")";
+        String streamCollected = s.collect(Collectors.joining(")("));
+        return streamCollected.length() == 0 ? "" : "(" + streamCollected + ")";
     }
 
     @BeforeClass
     public static void createTree() {
-        numNodes = 0;
-        while (numNodes < 10)           // Re-create tree if too small
+        while (numNodes < 10) {         // Re-create tree if too small
+            numNodes = 0;
             root = createNodeRecursively("*");
+        }
     }
 
     @Test
