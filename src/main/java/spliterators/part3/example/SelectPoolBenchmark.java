@@ -33,6 +33,23 @@ public class SelectPoolBenchmark {
 
 
     @Benchmark
+    public long sum1_seq() throws ExecutionException, InterruptedException {
+
+        ForkJoinPool p = new ForkJoinPool(1);
+        return p.submit(() ->
+                Arrays.stream(array)
+                        .sequential()
+                        .unordered()
+                        .map(i -> {
+                            Blackhole.consumeCPU(100);
+                            return i;
+                        })
+                        .asLongStream()
+                        .sum())
+                .get();
+    }
+
+    @Benchmark
     public long sum1() throws ExecutionException, InterruptedException {
 
         ForkJoinPool p = new ForkJoinPool(1);
@@ -70,6 +87,23 @@ public class SelectPoolBenchmark {
     public long sum4() throws ExecutionException, InterruptedException {
 
         ForkJoinPool p = new ForkJoinPool(4);
+        return p.submit(() ->
+                Arrays.stream(array)
+                        .parallel()
+                        .unordered()
+                        .map(i -> {
+                            Blackhole.consumeCPU(100);
+                            return i;
+                        })
+                        .asLongStream()
+                        .sum())
+                .get();
+    }
+
+    @Benchmark
+    public long sum8() throws ExecutionException, InterruptedException {
+
+        ForkJoinPool p = new ForkJoinPool(8);
         return p.submit(() ->
                 Arrays.stream(array)
                         .parallel()
