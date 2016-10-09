@@ -62,8 +62,5 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
     public long estimateSize() {
         return inner.estimateSize();
     }
-}
 
-// TODO: 05.10.2016 Make test по аналогии с IndexedArraySpliteratorTest
-// TODO: 05.10.2016 Было I, стало B[i] ZipWithArraySpliterator
-// TODO: 05.10.2016 Сделать бенчмарк
+}
