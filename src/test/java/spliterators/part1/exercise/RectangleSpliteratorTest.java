@@ -1,101 +1,127 @@
 package spliterators.part1.exercise;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntConsumer;
 import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+@RunWith(Parameterized.class)
 public class RectangleSpliteratorTest {
 
-    private static final int LENGTH = 1000;
-    private final int[][] randomArray = getRandomArray(LENGTH);
-    private final int[][] singleElementArray = getRandomArray(1);
+    @Parameters(name = "firstArrayLength = {0}")
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[]
+                {0, 1, 2, 3, 4, 1000}
+        );
+    }
 
-    private static int[][] getRandomArray(int length) {
-        final int[][] result = new int[length][length];
+    @Parameter
+    public int length;
+    private int[][] randomArray;
+    private RectangleSpliterator spliterator;
 
+    private List<Integer> arrayToList(int[][] array) {
+        return arrayToList(array, 0, array.length);
+    }
+
+    private List<Integer> arrayToList(int[][] array, int skip, int limit) {
+        return Arrays.stream(array)
+                .skip(skip)
+                .limit(limit)
+                .flatMapToInt(Arrays::stream)
+                .boxed()
+                .collect(toList());
+    }
+
+    private List<Integer> tryAdvance(Spliterator.OfInt spliterator) {
+        return StreamSupport.stream(spliterator, false)
+                .collect(toList());
+    }
+
+    @Before
+    public void getRandomArray() {
+        randomArray = new int[length][length];
         for (int i = 0; i < length; i++) {
             for (int j = 0; j < length; j++) {
-                result[i][j] = ThreadLocalRandom.current().nextInt();
+                randomArray[i][j] = ThreadLocalRandom.current().nextInt();
             }
         }
-        return result;
+        spliterator = new RectangleSpliterator(randomArray);
     }
 
     @Test
     public void compareArrays() {
-        final RectangleSpliterator spliterator = new RectangleSpliterator(randomArray);
         final List<Integer> result1 =
-                Arrays.stream(randomArray)
-                        .flatMapToInt(Arrays::stream)
-                        .boxed()
-                        .collect(toList());
+                arrayToList(randomArray);
 
         final List<Integer> result2 =
-        StreamSupport.stream(spliterator, true)
-                .map(p -> p + 1)
-                .map(p -> p - 1)
-                .collect(toList());
+                StreamSupport.stream(spliterator, true)
+                        .map(p -> p + 1)
+                        .map(p -> p - 1)
+                        .collect(toList());
 
         assertEquals(result1, result2);
     }
 
     @Test
     public void estimateSize() {
-        final RectangleSpliterator spliterator = new RectangleSpliterator(randomArray);
-        assertEquals(LENGTH*LENGTH, spliterator.estimateSize());
-    }
-
-    @Test
-    public void trySplitInHalf() {
-        final RectangleSpliterator spliterator = new RectangleSpliterator(randomArray);
-        final Spliterator.OfInt split = spliterator.trySplit();
-
-        assertEquals(LENGTH*LENGTH / 2, spliterator.estimateSize());
-        assertEquals(LENGTH*LENGTH / 2, split.estimateSize());
-        assertNotNull(split);
+        assertEquals(length * length, spliterator.estimateSize());
     }
 
     @Test
     public void forEachRemaining() {
-        final RectangleSpliterator spliterator = new RectangleSpliterator(randomArray);
-        final List<Integer> expected = new ArrayList<>();
-        final IntConsumer c = expected::add;
+        final List<Integer> result = new ArrayList<>();
+        final IntConsumer c = result::add;
 
         spliterator.forEachRemaining(c);
 
         assertEquals(0, spliterator.estimateSize());
-        assertEquals(expected, Arrays.stream(randomArray)
-                .flatMapToInt(Arrays::stream)
-                .boxed()
-                .collect(toList()));
+        assertEquals(result, arrayToList(randomArray));
     }
 
     @Test
-    public void trySplitForSingleElementArray() {
-        final RectangleSpliterator emptySpliterator = new RectangleSpliterator(singleElementArray);
-        final Spliterator.OfInt split = emptySpliterator.trySplit();
+    public void tryAdvance() {
+        final List<Integer> result = new ArrayList<>();
+        final IntConsumer c = result::add;
 
-        assertNull(split);
+        while (spliterator.tryAdvance(c));
+
+        assertEquals(0, spliterator.estimateSize());
+        assertEquals(result, arrayToList(randomArray));
     }
 
     @Test
-    public void tryAdvanceForSingleElementArray() {
-        final RectangleSpliterator emptySpliterator = new RectangleSpliterator(singleElementArray);
-        final int[][] expected = new int[1][1];
-        final IntConsumer c = (x) -> expected[0][0] = x;
+    public void trySplitInHalf() {
+        final Spliterator.OfInt split = spliterator.trySplit();
+        final int rightLength = (length % 2 == 0) ? length / 2 : length / 2 + 1;
+        final int leftLength = length / 2;
 
-        assertTrue(emptySpliterator.tryAdvance(c));
-        assertFalse(emptySpliterator.tryAdvance(c));
-        assertArrayEquals(expected, singleElementArray);
+        if (length <= 1) {
+            assertNull(split);
+        } else {
+            assertEquals(leftLength * length, split.estimateSize());
+            final List<Integer> leftExpected = arrayToList(randomArray, 0, leftLength);
+            final List<Integer> leftResult = tryAdvance(split);
+            assertEquals(leftExpected, leftResult);
+        }
+
+        assertEquals(rightLength * length, spliterator.estimateSize());
+
+        final List<Integer> rightExpected = arrayToList(randomArray, leftLength, rightLength);
+        final List<Integer> rightResult = tryAdvance(spliterator);
+        assertEquals(rightExpected, rightResult);
+
     }
 
 }
