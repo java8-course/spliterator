@@ -28,18 +28,26 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         this.innerToExclusive = innerToExclusive;
     }
 
+    private int calcOuterLength() {
+        return outerToExclusive - outerFromInclusive;
+    }
+
     @Override
     public OfInt trySplit() {
-        int length = (outerToExclusive - outerFromInclusive) * innerLength - innerFromInclusive - (innerLength - innerToExclusive);
+        int lengthLastInnerLine = innerLength - innerToExclusive;
+        int length = calcOuterLength() * innerLength - innerFromInclusive - lengthLastInnerLine;
+
         int middleLength = length / 2;
 
-        if (length <= 1)
+        if (length <= 1) {
             return null;
+        }
 
         int outerMiddle = outerFromInclusive + (innerFromInclusive + middleLength) / innerLength;
         int innerMiddle = (innerFromInclusive + middleLength) % innerLength;
 
-        final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, outerFromInclusive, outerMiddle + 1, innerFromInclusive, innerMiddle);
+        final RectangleSpliterator newSpliterator =
+                new RectangleSpliterator(array, outerFromInclusive, outerMiddle + 1, innerFromInclusive, innerMiddle);
 
         outerFromInclusive = outerMiddle;
         innerFromInclusive = innerMiddle;
@@ -49,7 +57,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public long estimateSize() {
-        return ((long) outerToExclusive - outerFromInclusive) * innerLength - innerFromInclusive - (innerLength - innerToExclusive);
+        return ((long) calcOuterLength()) * innerLength - innerFromInclusive - (innerLength - innerToExclusive);
     }
 
     @Override
@@ -86,11 +94,12 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
             int currentInnerFromInclusive = i == outerFromInclusive ? innerFromInclusive : 0;
             int currentInnerToExlusive = i == outerToExclusive - 1 ? innerToExclusive : innerLength;
 
-            for (int j = currentInnerFromInclusive; j < currentInnerToExlusive; j++) {
+            int j;
+            for (j = currentInnerFromInclusive; j < currentInnerToExlusive; j++) {
                 action.accept(array[i][j]);
-                innerFromInclusive = j;
             }
+            innerFromInclusive = j;
         }
-        outerFromInclusive = i;
+        outerFromInclusive = i - 1;
     }
 }
