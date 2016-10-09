@@ -3,12 +3,13 @@ package spliterators.part2.exercise;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSpliterator<IndexedDoublePair> {
 
 
     private final OfDouble inner;
-    private final int currentIndex;
+    private /*final*/ int currentIndex;
 
     public ZipWithIndexDoubleSpliterator(OfDouble inner) {
         this(0, inner);
@@ -22,14 +23,20 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.tryAdvance((DoubleConsumer) d-> {
+            IndexedDoublePair indexedDoublePair = new IndexedDoublePair(currentIndex, d);
+            currentIndex += 1;
+            action.accept(indexedDoublePair);
+        });
     }
 
     @Override
     public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining((double d) -> {
+            IndexedDoublePair indexedDoublePair = new IndexedDoublePair(currentIndex, d);
+            currentIndex += 1;
+            action.accept(indexedDoublePair);
+        });
     }
 
     @Override
@@ -38,13 +45,24 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
         // if (inner.hasCharacteristics(???)) {
         //   use inner.trySplit
         // } else
+        if (inner.hasCharacteristics(SUBSIZED)){
+            OfDouble zplit = inner.trySplit();
 
-        return super.trySplit();
+            if (zplit==null){
+                return null;
+            }
+
+            ZipWithIndexDoubleSpliterator zipWithIndexDoubleSpliterator = new ZipWithIndexDoubleSpliterator(currentIndex, zplit);
+            currentIndex += zplit.estimateSize();
+
+            return zipWithIndexDoubleSpliterator;
+        } else {
+            return super.trySplit();
+        }
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize();
     }
 }

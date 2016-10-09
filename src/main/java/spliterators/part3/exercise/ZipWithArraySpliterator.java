@@ -9,35 +9,51 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     private final Spliterator<A> inner;
     private final B[] array;
+    private int currentIndex=0;
 
     public ZipWithArraySpliterator(Spliterator<A> inner, B[] array) {
-        super(Long.MAX_VALUE, 0); // FIXME:
-        // TODO
-        throw new UnsupportedOperationException();
+        super(0, inner.characteristics());
+        this.inner = inner;
+        this.array = array;
+
     }
 
 
     @Override
-    public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+    public boolean tryAdvance(Consumer<? super Pair<A, B>> action){
+        return inner.tryAdvance(d-> {
+            Pair<A,B> pair = new Pair(currentIndex, d);
+            currentIndex += 1;
+            action.accept(pair);
+        });
     }
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining(d->{
+            Pair<A,B> pair = new Pair(currentIndex, d);
+            currentIndex += 1;
+            action.accept(pair);
+        });
     }
 
     @Override
     public Spliterator<Pair<A, B>> trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (inner.hasCharacteristics(SIZED)){
+            Spliterator split = inner.trySplit();
+            if (split==null) return null;
+            else {
+                ZipWithArraySpliterator zipWithArraySpliterator = new ZipWithArraySpliterator<>(split, array);
+                currentIndex+=split.estimateSize();
+                return zipWithArraySpliterator;
+            }
+        } else return super.trySplit();
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return
+                inner.estimateSize()<(array.length-currentIndex)?
+                inner.estimateSize():array.length-currentIndex;
     }
 }

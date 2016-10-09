@@ -1,7 +1,7 @@
 package spliterators.part2.example;
 
 import org.junit.Test;
-import spliterators.part2.example.ArrayZipWithIndexExample.IndexedAttaySpliterator;
+import spliterators.part2.example.ArrayZipWithIndexExample.IndexedArraySpliterator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +36,7 @@ public class IndexedAttaySpliteratorTest {
                         .collect(toList());
 
         final List<IndexedPair<String>> result2 =
-        StreamSupport.stream(new IndexedAttaySpliterator<>(randomArray), true)
+        StreamSupport.stream(new IndexedArraySpliterator<>(randomArray), true)
                 .map(p -> new IndexedPair<>(p.getIndex() + 1, p.getValue()))
                 .map(p -> new IndexedPair<>(p.getIndex() - 1, p.getValue()))
                 .collect(toList());
