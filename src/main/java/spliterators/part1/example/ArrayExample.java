@@ -2,6 +2,7 @@ package spliterators.part1.example;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 public class ArrayExample {
@@ -58,6 +59,14 @@ public class ArrayExample {
             startInclusive = middle;
 
             return newSpliterator;
+        }
+
+        @Override
+        public void forEachRemaining (Consumer<? super Integer> action) {
+            for (int i = startInclusive; i < endExclusive; i++) {
+                action.accept(array[i]);
+            }
+            startInclusive = endExclusive;
         }
     }
 }
