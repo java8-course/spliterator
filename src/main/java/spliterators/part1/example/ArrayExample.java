@@ -59,5 +59,13 @@ public class ArrayExample {
 
             return newSpliterator;
         }
+
+        @Override
+        public void forEachRemaining(IntConsumer action) {
+            for (int i = startInclusive; i < endExclusive; i++) {
+                action.accept(array[i]);
+            }
+            startInclusive = endExclusive;
+        }
     }
 }
