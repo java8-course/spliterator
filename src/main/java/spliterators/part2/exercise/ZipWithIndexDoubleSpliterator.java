@@ -25,7 +25,7 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
     public int characteristics() {
         // TODO
 //        throw new UnsupportedOperationException();
-        return inner.characteristics();
+        return inner.characteristics() & -Spliterator.SORTED;
     }
 
     @Override
@@ -64,8 +64,7 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
             if (split == null){
                 return null;
             }
-            final ZipWithIndexDoubleSpliterator result = new ZipWithIndexDoubleSpliterator(currentIndex, split);
-            return result;
+            return new ZipWithIndexDoubleSpliterator(currentIndex, split);
         }
         else {
             return super.trySplit();
