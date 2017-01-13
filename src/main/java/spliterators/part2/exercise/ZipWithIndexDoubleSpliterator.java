@@ -23,7 +23,7 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        return inner.characteristics();
+        return inner.characteristics() & ~Spliterator.SORTED;
     }
 
     @Override
