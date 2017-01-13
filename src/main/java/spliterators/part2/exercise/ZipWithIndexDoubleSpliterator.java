@@ -28,7 +28,11 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public Comparator<? super IndexedDoublePair> getComparator() {
-        return Comparator.comparing(IndexedDoublePair::getValue,inner.getComparator());
+        final Comparator<? super Double> innerComparator = inner.getComparator();
+        if (innerComparator == null){
+            return null;
+        } 
+        return Comparator.comparing(IndexedDoublePair::getValue, innerComparator);
     }
 
     @Override
