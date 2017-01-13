@@ -9,9 +9,9 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
+    private int startOuterInclusive;
     private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -29,8 +29,17 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        final int length = endOuterExclusive - startOuterInclusive;
+
+        if (length < 2) {
+            return null;
+        }
+
+        int middle = startOuterInclusive + length/2;
+        final RectangleSpliterator res = new RectangleSpliterator(array, startOuterInclusive, middle, startInnerInclusive);
+        startOuterInclusive = middle;
+        startInnerInclusive = 0;
+        return res;
     }
 
     @Override
@@ -40,7 +49,29 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (startOuterInclusive >= endOuterExclusive) {
+            return false;
+        }
+        if (startInnerInclusive >= innerLength) {
+            if (startOuterInclusive < endOuterExclusive -1) {
+                startInnerInclusive = 0;
+                ++startOuterInclusive;
+            } else {
+                return false;
+            }
+        }
+        action.accept(array[startOuterInclusive][startInnerInclusive]);
+        ++startInnerInclusive;
+        return true;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
+        for (int i = startOuterInclusive; i < endOuterExclusive; i++) {
+            for (int j = startInnerInclusive; j < innerLength; j++) {
+                action.accept(array[i][j]);
+            }
+            startInnerInclusive = 0;
+        }
     }
 }
