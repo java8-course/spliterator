@@ -73,5 +73,6 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
             }
             startInnerInclusive = 0;
         }
+        startOuterInclusive = endOuterExclusive;
     }
 }
