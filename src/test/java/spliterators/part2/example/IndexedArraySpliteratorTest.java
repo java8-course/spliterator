@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class IndexedArraySpliteratorTest {
 
-    private String[] getRandomArray(int length) {
+    public static String[] getRandomArray(int length) {
         final String[] result = new String[length];
 
         for (int i = 0; i < length; i++) {
