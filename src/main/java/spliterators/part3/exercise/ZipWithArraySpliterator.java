@@ -9,40 +9,68 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     private final Spliterator<A> inner;
     private final B[] array;
+    private int startIndex;
+    private final int endIndex;
 
     public ZipWithArraySpliterator(Spliterator<A> inner, B[] array) {
-        super(Long.MAX_VALUE, 0); // FIXME:
-        // TODO
-        throw new UnsupportedOperationException();
+        this(inner, array, 0, array.length);
+    }
+
+    public ZipWithArraySpliterator(Spliterator<A> inner, B[] array, int startIndex, int endIndex) {
+        super(endIndex - startIndex, inner.characteristics());
+        this.inner = inner;
+        this.array = array;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
     }
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics() & ~Spliterator.SORTED;
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Consumer<A> aConsumer = (a) -> action.accept(new Pair<>(a, array[startIndex]));
+        if (startIndex < endIndex && inner.tryAdvance(aConsumer)) {
+            startIndex++;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        Consumer<A> aConsumer = (a) -> {
+            if (startIndex < endIndex) {
+                action.accept(new Pair<>(a, array[startIndex]));
+            }
+        };
+        inner.forEachRemaining(aConsumer);
     }
 
     @Override
     public Spliterator<Pair<A, B>> trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (inner.hasCharacteristics(Spliterator.SUBSIZED)) {
+            Spliterator<A> innerSpliterator = inner.trySplit();
+            if (innerSpliterator == null) {
+                return null;
+            }
+            int length = endIndex - startIndex;
+            if (length < 2) {
+                return null;
+            }
+            int middle = startIndex + length / 2;
+            Spliterator<Pair<A, B>> zipWithArraySpliterator =
+                    new ZipWithArraySpliterator<>(innerSpliterator, array, startIndex, middle);
+            startIndex += middle;
+            return zipWithArraySpliterator;
+        }
+        return super.trySplit();
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return Long.min(inner.estimateSize(),endIndex - startIndex);
     }
 }
