@@ -34,7 +34,10 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     @Override
     public OfInt trySplit() {
         final int length = endOuterExclusive - startOuterInclusive;
-        if (length < 2){
+        if (length <= 0){
+            return null;
+        }
+        if (length == 1){
             return tryInnerSplit();
         }
         final int middle = startOuterInclusive + length /2;
@@ -63,23 +66,24 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        if (startOuterInclusive >= endOuterExclusive || startInnerInclusive >= endInnerExclusive){
+        if (startOuterInclusive >= endOuterExclusive){
             return false;
+        }
+        if (startInnerInclusive >= endInnerExclusive) {
+            ++startOuterInclusive;
+            if (startOuterInclusive >= endOuterExclusive){
+                return false;
+            }
+            startInnerInclusive = 0;
+            endInnerExclusive = array[startOuterInclusive].length;
         }
         action.accept(array[startOuterInclusive][startInnerInclusive]);
         ++startInnerInclusive;
-        if (startInnerInclusive >= endInnerExclusive) {
-            ++startOuterInclusive;
-        }
         return true;
     }
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        for (int outer = startOuterInclusive; outer < endOuterExclusive; ++outer){
-            for (int inner = startInnerInclusive; inner < endInnerExclusive; ++inner){
-                action.accept(array[outer][inner]);
-            }
-        }
+        while(tryAdvance(action));
     }
 }
