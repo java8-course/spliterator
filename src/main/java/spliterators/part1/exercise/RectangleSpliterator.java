@@ -37,6 +37,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         int outerMiddle = startOuterInclusive + outerLength / 2;
         final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, startOuterInclusive, outerMiddle, startInnerInclusive);
         startOuterInclusive = outerMiddle;
+        startInnerInclusive = 0;
         return newSpliterator;
     }
 
@@ -69,6 +70,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
                 action.accept(array[i][j]);
             }
             startInnerInclusive = 0;
+            startOuterInclusive = endOuterExclusive;
         }
     }
 }
