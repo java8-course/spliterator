@@ -55,7 +55,9 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
             if (split == null) {
                 return null;
             } else {
-                return new ZipWithIndexDoubleSpliterator(currentIndex, split);
+                ZipWithIndexDoubleSpliterator spliterator = new ZipWithIndexDoubleSpliterator(currentIndex, split);
+                currentIndex += spliterator.estimateSize();
+                return spliterator;
             }
         } else {
             return super.trySplit();
