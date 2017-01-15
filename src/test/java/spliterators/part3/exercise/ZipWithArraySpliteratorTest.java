@@ -19,7 +19,7 @@ public class ZipWithArraySpliteratorTest {
 
     private static <A,B> Stream<Pair<A,B>> getStream(A[] values, B[] joinings, boolean parallel) {
         return StreamSupport.stream(new ZipWithArraySpliterator<>(Arrays.spliterator(values),
-                joinings, 0, joinings.length), parallel);
+                joinings, 0), parallel);
     }
 
     @Test

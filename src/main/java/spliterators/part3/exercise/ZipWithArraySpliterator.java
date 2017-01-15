@@ -11,14 +11,11 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     private final Spliterator<A> inner;
     private final B[] array;
     private int startInclusive;
-    private int endExclusive;
 
-    public ZipWithArraySpliterator(Spliterator<A> inner, B[] array, int startInclusive,
-                                   int endExclusive) {
+    public ZipWithArraySpliterator(Spliterator<A> inner, B[] array, int startInclusive) {
         super(inner.estimateSize(), inner.characteristics());
         this.array = array;
         this.startInclusive = startInclusive;
-        this.endExclusive = endExclusive;
         this.inner = inner;
     }
 
@@ -35,7 +32,7 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
-        if (startInclusive >= endExclusive || startInclusive >= array.length){
+        if (startInclusive >= array.length){
             return false;
         }
         return inner.tryAdvance(combineActions(action));
@@ -50,7 +47,11 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        while (tryAdvance(action));
+        if (inner.estimateSize() > array.length - startInclusive){
+            while(tryAdvance(action));
+        } else {
+            inner.forEachRemaining(combineActions(action));
+        }
     }
 
     @Override
@@ -60,14 +61,12 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
             if (splitted == null){
                 return null;
             }
-            int resultEndExclusive = startInclusive + (int)splitted.estimateSize();
-            if (resultEndExclusive > array.length){
-                resultEndExclusive = array.length;
+            int nextStart = startInclusive + (int)splitted.estimateSize();
+            if (nextStart > array.length){
+                nextStart = array.length;
             }
-            final ZipWithArraySpliterator<A,B> resultSpliterator =
-                    new ZipWithArraySpliterator<>(splitted, array, startInclusive, resultEndExclusive);
-            startInclusive = resultEndExclusive;
-            return resultSpliterator;
+            startInclusive = nextStart;
+            return new ZipWithArraySpliterator<>(splitted, array, startInclusive);
         } else {
             return super.trySplit();
         }
@@ -75,6 +74,6 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public long estimateSize() {
-        return inner.estimateSize();
+        return inner.estimateSize() < array.length ? inner.estimateSize() : array.length;
     }
 }
