@@ -3,9 +3,7 @@ package spliterators.part4.data;
 import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * Created by hamster on 15.01.17.
- */
+
 public class NodeSplitertor <T> implements Spliterator <T> {
 
     private LinkedList <Node<T>> branch;
@@ -14,7 +12,7 @@ public class NodeSplitertor <T> implements Spliterator <T> {
         LinkedList <Node<T>> result = new LinkedList<>();
         Node<T> currentNode = node;
         while (currentNode.getLeft() != null) {
-            result.add(currentNode.getLeft());
+            result.add(currentNode);
             currentNode = currentNode.getLeft();
         }
         result.add(currentNode);
@@ -48,17 +46,17 @@ public class NodeSplitertor <T> implements Spliterator <T> {
     public Spliterator <T> trySplit() {
         if (branch.size() >= 2) {
             final Node <T> top = branch.removeFirst();
-            final NodeSplitertor <T> result = new NodeSplitertor <T> (branch);
+            final NodeSplitertor <T> result = new NodeSplitertor <> (branch);
             branch.clear();
             branch.add(top);
             return result;
         }
         else if (branch.size() == 1) {
-            final Node <T> top = branch.getLast();
+            final Node <T> top = branch.getFirst();
             final Node <T> right = top.getRight();
             if (right != null) {
                 branch = getBranch(right);
-                return new tSpliterator<T>(top.getValue());
+                return new tSpliterator<>(top.getValue());
             } else {
                 return null;
             }
