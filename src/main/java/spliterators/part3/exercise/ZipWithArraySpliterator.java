@@ -1,5 +1,6 @@
 package spliterators.part3.exercise;
 
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -10,14 +11,12 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     private final Spliterator<A> inner;
     private final B[] array;
     private int currentIndex;
-    private final long endExclusive;
 
 
     private ZipWithArraySpliterator(Spliterator<A> inner, B[] array, int startInclusive) {
         super(Math.min(inner.estimateSize(), array.length - startInclusive), inner.characteristics());
         this.inner = inner;
         this.array = array;
-        endExclusive = Long.min(inner.estimateSize(), array.length);
         currentIndex = startInclusive;
     }
 
@@ -27,12 +26,12 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        return inner.characteristics()&(~Spliterator.SORTED);
+        return inner.characteristics();
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
-        if (array.length - currentIndex == 0) {
+        if (array.length == currentIndex) {
             return false;
         }
         return inner.tryAdvance(a -> {
@@ -44,7 +43,7 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        if (inner.estimateSize() <= array.length - currentIndex) {
+        if ((inner.hasCharacteristics(Spliterator.SIZED))&(inner.estimateSize() <= array.length - currentIndex)) {
             inner.forEachRemaining(a -> {
                 final Pair<A, B> pair = new Pair<A, B>(a, array[currentIndex]);
                 currentIndex += 1;
@@ -72,5 +71,16 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     @Override
     public long estimateSize() {
         return Long.min(inner.estimateSize(), array.length - currentIndex);
+    }
+
+
+    @Override
+    public Comparator<? super Pair<A, B>> getComparator() {
+        return new Comparator<Pair<A, B>>() {
+            @Override
+            public int compare(Pair<A, B> o1, Pair<A, B> o2) {
+                return o1.getA().toString().compareTo(o2.getA().toString());
+            }
+        };
     }
 }
