@@ -3,6 +3,7 @@ package spliterators.part2.exercise;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSpliterator<IndexedDoublePair> {
 
@@ -22,35 +23,42 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics();
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.tryAdvance((DoubleConsumer) d -> {
+            final IndexedDoublePair indexedDoublePair = new IndexedDoublePair(currentIndex, d);
+            ++currentIndex;
+            action.accept(indexedDoublePair);
+        });
     }
 
     @Override
     public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining((DoubleConsumer) d -> {
+            final IndexedDoublePair indexedDoublePair = new IndexedDoublePair(currentIndex, d);
+            ++currentIndex;
+            action.accept(indexedDoublePair);
+        });
     }
 
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
-        // TODO
-        // if (inner.hasCharacteristics(???)) {
-        //   use inner.trySplit
-        // } else
-
+        if(inner.hasCharacteristics(Spliterator.SUBSIZED)){
+            final OfDouble ofDouble = inner.trySplit();
+            if(ofDouble == null)
+                return null;
+            final ZipWithIndexDoubleSpliterator zipWithIndexDoubleSpliterator = new ZipWithIndexDoubleSpliterator(currentIndex, inner);
+            currentIndex += ofDouble.estimateSize();
+            return zipWithIndexDoubleSpliterator;
+        }
         return super.trySplit();
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize();
     }
 }
