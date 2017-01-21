@@ -46,20 +46,16 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        if (startOuterInclusive >= endOuterExclusive) {
-            return false;
-        }
-        if (startInnerInclusive >= innerLength) {
-            if (startOuterInclusive < endOuterExclusive - 1) {
-                ++startOuterInclusive;
+        if (startInnerInclusive < endOuterExclusive) {
+            action.accept(array[startOuterInclusive][startInnerInclusive]);
+            ++startInnerInclusive;
+            if ((startInnerInclusive == endOuterExclusive) && (startOuterInclusive < endOuterExclusive)) {
                 startInnerInclusive = 0;
-            } else {
-                return false;
+                ++startOuterInclusive;
             }
-        }
-        action.accept(array[startOuterInclusive][startInnerInclusive]);
-        ++startInnerInclusive;
-        return true;
+            return true;
+        } else
+            return false;
     }
 
 
