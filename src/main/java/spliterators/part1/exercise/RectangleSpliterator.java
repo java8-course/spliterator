@@ -33,31 +33,21 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public OfInt trySplit() {
-        final int outerLength = endOuterExclusive - startOuterInclusive;
-        final int totalLength;
-        if (outerLength < 1){
-            return null;
-        } else if (outerLength == 1){
-            totalLength = endInnerExclusive - startInnerInclusive;
-        } else{
-            totalLength = (innerLength - startInnerInclusive) + innerLength*(outerLength-2) + endInnerExclusive;
-        }
+        final int totalLength = (int) estimateSize();
         if (totalLength < 2){
             return null;
         }
         final RectangleSpliterator result;
         int lengthLeft = totalLength / 2;
         if (lengthLeft - (innerLength - startInnerInclusive) <= 0){     // outerLength == 1
-            result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 1,startInnerInclusive,
-                    startInnerInclusive + lengthLeft);
+            result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 1,startInnerInclusive,startInnerInclusive + lengthLeft);
             startInnerInclusive = startInnerInclusive + lengthLeft;
             return result;
         }
         lengthLeft -= (innerLength - startInnerInclusive);
         final int fullRowsCount = Math.floorDiv(lengthLeft,innerLength); // outerLength > 1
         lengthLeft -= fullRowsCount * innerLength;
-        result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 2 + fullRowsCount,startInnerInclusive,
-                lengthLeft);
+        result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 2 + fullRowsCount,startInnerInclusive, lengthLeft);
         startInnerInclusive = lengthLeft;
         startOuterInclusive += 1 + fullRowsCount;
         return result;
@@ -66,11 +56,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     @Override
     public long estimateSize() {
         int outerLength = endOuterExclusive - startOuterInclusive;
-        if (outerLength == 1){
-            return endInnerExclusive - startInnerInclusive;
-        } else{
-            return (innerLength - startInnerInclusive) + innerLength * (outerLength - 2) + endInnerExclusive;
-        }
+        return innerLength*(outerLength - 1) + endInnerExclusive - startInnerInclusive;
     }
 
     @Override
@@ -92,15 +78,17 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        for (; startOuterInclusive < endOuterExclusive - 1; ++startOuterInclusive){
-            for (; startInnerInclusive < innerLength; ++startInnerInclusive){
-                action.accept(array[startOuterInclusive][startInnerInclusive]);
+        int outer = startOuterInclusive;
+        int inner = startInnerInclusive;
+        for (; outer < endOuterExclusive - 1; ++outer){
+            for (; inner < innerLength; ++inner){
+                action.accept(array[outer][inner]);
             }
-            startInnerInclusive = 0;
+            inner = 0;
         }
-        if (endOuterExclusive == startOuterInclusive + 1){
-            for (; startInnerInclusive < endInnerExclusive; ++startInnerInclusive){
-                action.accept(array[startOuterInclusive][startInnerInclusive]);
+        if (endOuterExclusive == outer + 1){
+            for (; inner < endInnerExclusive; ++inner){
+                action.accept(array[outer][inner]);
             }
         }
     }
