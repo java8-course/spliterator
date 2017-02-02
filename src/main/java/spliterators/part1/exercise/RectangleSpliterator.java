@@ -37,7 +37,6 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         if (totalLength < 2){
             return null;
         }
-        final RectangleSpliterator result;
         int lengthLeft = totalLength / 2;
         int fullRowsCount = Math.floorDiv(lengthLeft,innerLength);
         final int remain = lengthLeft % innerLength;
@@ -47,7 +46,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
             endInnerExclusiveResult -= innerLength;
         }
         final int nextStartOuterInclusive = startOuterInclusive + fullRowsCount;
-        result = new RectangleSpliterator(array,startOuterInclusive,
+        final RectangleSpliterator result = new RectangleSpliterator(array,startOuterInclusive,
                 nextStartOuterInclusive + 1,startInnerInclusive, endInnerExclusiveResult);
         startInnerInclusive = endInnerExclusiveResult;
         startOuterInclusive = nextStartOuterInclusive;
