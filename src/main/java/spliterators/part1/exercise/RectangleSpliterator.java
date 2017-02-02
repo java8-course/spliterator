@@ -39,23 +39,27 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         }
         final RectangleSpliterator result;
         int lengthLeft = totalLength / 2;
-        if (lengthLeft - (innerLength - startInnerInclusive) <= 0){     // outerLength == 1
-            result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 1,startInnerInclusive,startInnerInclusive + lengthLeft);
-            startInnerInclusive = startInnerInclusive + lengthLeft;
-            return result;
+        int fullRowsCount = Math.floorDiv(lengthLeft,innerLength);
+        final int remain = lengthLeft % innerLength;
+        int endInnerExclusiveResult = startInnerInclusive + remain;
+        if (endInnerExclusiveResult >= innerLength) {
+            ++fullRowsCount;
+            endInnerExclusiveResult -= innerLength;
         }
-        lengthLeft -= (innerLength - startInnerInclusive);
-        final int fullRowsCount = Math.floorDiv(lengthLeft,innerLength); // outerLength > 1
-        lengthLeft -= fullRowsCount * innerLength;
-        result = new RectangleSpliterator(array,startOuterInclusive,startOuterInclusive + 2 + fullRowsCount,startInnerInclusive, lengthLeft);
-        startInnerInclusive = lengthLeft;
-        startOuterInclusive += 1 + fullRowsCount;
+        final int nextStartOuterInclusive = startOuterInclusive + fullRowsCount;
+        result = new RectangleSpliterator(array,startOuterInclusive,
+                nextStartOuterInclusive + 1,startInnerInclusive, endInnerExclusiveResult);
+        startInnerInclusive = endInnerExclusiveResult;
+        startOuterInclusive = nextStartOuterInclusive;
         return result;
     }
 
     @Override
     public long estimateSize() {
         int outerLength = endOuterExclusive - startOuterInclusive;
+        if (outerLength <= 0){
+            throw new NegativeArraySizeException("startOuterInclusive == endOuterExclusive");
+        }
         return innerLength*(outerLength - 1) + endInnerExclusive - startInnerInclusive;
     }
 
@@ -78,18 +82,15 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        int outer = startOuterInclusive;
         int inner = startInnerInclusive;
-        for (; outer < endOuterExclusive - 1; ++outer){
+        for (int outer = startOuterInclusive; outer < endOuterExclusive - 1; ++outer){
             for (; inner < innerLength; ++inner){
                 action.accept(array[outer][inner]);
             }
             inner = 0;
         }
-        if (endOuterExclusive == outer + 1){
-            for (; inner < endInnerExclusive; ++inner){
-                action.accept(array[outer][inner]);
-            }
+        for (int outer = endOuterExclusive - 1; inner < endInnerExclusive; ++inner){
+            action.accept(array[outer][inner]);
         }
     }
 }
