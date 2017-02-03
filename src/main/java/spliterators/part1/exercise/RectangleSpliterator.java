@@ -57,7 +57,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     public long estimateSize() {
         int outerLength = endOuterExclusive - startOuterInclusive;
         if (outerLength <= 0){
-            throw new NegativeArraySizeException("startOuterInclusive == endOuterExclusive");
+            return 0;
         }
         return innerLength*(outerLength - 1) + endInnerExclusive - startInnerInclusive;
     }
