@@ -2,6 +2,7 @@ package spliterators.part1.example;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 //https://github.com/java8-course/spliterator.git
@@ -63,6 +64,14 @@ public class ArrayExample {
 
         @Override
         public void forEachRemaining(IntConsumer action) {
+            for (int i = startInclusive; i < endExclusive; i++) {
+                action.accept(array[i]);
+            }
+            startInclusive = endExclusive;
+        }
+
+        @Override
+        public void forEachRemaining (Consumer<? super Integer> action) {
             for (int i = startInclusive; i < endExclusive; i++) {
                 action.accept(array[i]);
             }
