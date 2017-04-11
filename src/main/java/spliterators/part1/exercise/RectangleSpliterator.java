@@ -9,9 +9,9 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
+    private int startOuterInclusive;
     private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -29,18 +29,45 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int lo = startOuterInclusive;
+        int mid = ((startOuterInclusive + endOuterExclusive) >>> 1) & ~1;
+        if (startOuterInclusive < mid) {
+            final RectangleSpliterator newSpliterator = new RectangleSpliterator(array, lo, mid, startInnerInclusive);
+            startOuterInclusive = mid;
+            startInnerInclusive = 0;
+            return newSpliterator;
+        } else
+            return null;
     }
 
     @Override
     public long estimateSize() {
-        return ((long) endOuterExclusive - startOuterInclusive)*innerLength - startInnerInclusive;
+        return ((long) endOuterExclusive - startOuterInclusive) * innerLength - startInnerInclusive;
     }
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (startInnerInclusive < array[0].length) {
+            action.accept(array[startOuterInclusive][startInnerInclusive]);
+            ++startInnerInclusive;
+            if (startInnerInclusive == array[0].length && startOuterInclusive < endOuterExclusive) {
+                startInnerInclusive = 0;
+                ++startOuterInclusive;
+            }
+            return true;
+        } else
+            return false;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
+        while(startOuterInclusive < endOuterExclusive){
+            while(startInnerInclusive < array[0].length){
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
+                ++startInnerInclusive;
+            }
+            startInnerInclusive = 0;
+            ++startOuterInclusive;
+        }
     }
 }
