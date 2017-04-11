@@ -28,8 +28,6 @@ public class Node<T> {
     }
 
     public Stream<T> stream() {
-        // TODO
-        throw new UnsupportedOperationException();
-        //return StreamSupport.stream(new NodeSplitertor(this));
+        return StreamSupport.stream(new NodeSplitertor(this), true);
     }
 }
