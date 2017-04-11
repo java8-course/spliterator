@@ -22,35 +22,39 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics() & ~Spliterator.SORTED;
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.tryAdvance((Double d) -> {
+            action.accept(new IndexedDoublePair(currentIndex, d));
+            currentIndex++;
+        });
     }
 
     @Override
     public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining((Double d) -> {
+            action.accept(new IndexedDoublePair(currentIndex, d));
+            currentIndex++;
+        });
     }
 
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
-        // TODO
-        // if (inner.hasCharacteristics(???)) {
-        //   use inner.trySplit
-        // } else
-
+        if (inner.hasCharacteristics(Spliterator.SUBSIZED)) {
+            final OfDouble ofDouble = inner.trySplit();
+            if(ofDouble == null) return null;
+            final ZipWithIndexDoubleSpliterator zipWithIndexDoubleSpliterator = new ZipWithIndexDoubleSpliterator(currentIndex, inner);
+            currentIndex += ofDouble.estimateSize();
+            return zipWithIndexDoubleSpliterator;
+        }
         return super.trySplit();
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize();
     }
 }
