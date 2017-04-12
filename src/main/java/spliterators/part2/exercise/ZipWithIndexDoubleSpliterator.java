@@ -11,6 +11,7 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     private final OfDouble inner;
     private int currentIndex;
+    private int characteristics;
 
     public ZipWithIndexDoubleSpliterator(OfDouble inner) {
         this(0, inner);
@@ -20,11 +21,15 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
         super(inner.estimateSize(), inner.characteristics());
         currentIndex = firstIndex;
         this.inner = inner;
+        characteristics = inner.characteristics();
+
+        if(!inner.hasCharacteristics(NONNULL))  characteristics += NONNULL;
+        if(!inner.hasCharacteristics(SORTED))  characteristics += SORTED;
     }
 
     @Override
     public int characteristics() {
-        return inner.hasCharacteristics(NONNULL) ? inner.characteristics() : inner.characteristics() + NONNULL;
+        return characteristics;
     }
 
     @Override
@@ -50,7 +55,7 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public long estimateSize() {
-        return inner.estimateSize() - currentIndex;
+        return inner.estimateSize();
     }
 
     @Override
