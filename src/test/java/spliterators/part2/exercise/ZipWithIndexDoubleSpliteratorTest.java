@@ -17,7 +17,7 @@ public class ZipWithIndexDoubleSpliteratorTest {
 
     @Test
     public void testByStream() {
-        double[] data = new double[] {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        double[] data = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
         ZipWithIndexDoubleSpliterator spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
 
         double res1 = StreamSupport.stream(spliterator, true)
@@ -30,19 +30,29 @@ public class ZipWithIndexDoubleSpliteratorTest {
                 .skip(3)
                 .mapToDouble(IndexedDoublePair::getValue)
                 .sum();
-        assertThat(res2, is(15));
+        assertThat(res2, is(15.0));
 
-//        spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
-//        int res3 = StreamSupport.doubleStream(new RectangleSpliterator(data), true)
-//                .reduce((e1, e2) -> e1*e2)
-//                .getAsInt();
-//        assertThat(res3, is(720));
-//
-//        spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
-//        boolean res4 = StreamSupport.doubleStream(new RectangleSpliterator(data), true)
-//                .filter(i ->  i%2==0)
-//                .anyMatch(i -> i<2);
-//        assertFalse(res4);
+        spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
+        double res3 = StreamSupport.stream(spliterator, true)
+                .mapToDouble(IndexedDoublePair::getValue)
+                .reduce((e1, e2) -> e1 * e2)
+                .getAsDouble();
+        assertThat(res3, is(720.0));
+    }
+
+    @Test
+    public void testCount() {
+        double[] data = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+        ZipWithIndexDoubleSpliterator spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
+        long res4 = StreamSupport.stream(spliterator, true)
+                .count();
+        assertThat(res4, is(10L));
+
+        spliterator = new ZipWithIndexDoubleSpliterator(Arrays.spliterator(data));
+        long res5 = StreamSupport.stream(spliterator, true)
+                .skip(9)
+                .count();
+        assertThat(res5, is(1L));
     }
 
 }
