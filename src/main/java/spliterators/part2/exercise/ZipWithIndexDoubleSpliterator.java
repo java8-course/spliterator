@@ -1,8 +1,10 @@
 package spliterators.part2.exercise;
 
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSpliterator<IndexedDoublePair> {
 
@@ -22,35 +24,37 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.hasCharacteristics(NONNULL) ? inner.characteristics() : inner.characteristics() + NONNULL;
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.tryAdvance((Double d) -> action.accept(new IndexedDoublePair(currentIndex++, d)));
     }
 
     @Override
     public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining((Double d) -> action.accept(new IndexedDoublePair(currentIndex++, d)));
     }
 
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
-        // TODO
-        // if (inner.hasCharacteristics(???)) {
-        //   use inner.trySplit
-        // } else
 
-        return super.trySplit();
+        if (inner.hasCharacteristics(SUBSIZED)) {
+            ZipWithIndexDoubleSpliterator res = new ZipWithIndexDoubleSpliterator(inner.trySplit());
+            currentIndex+=res.estimateSize();
+            return res;
+        } else
+            return super.trySplit();
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize() - currentIndex;
+    }
+
+    @Override
+    public Comparator<IndexedDoublePair> getComparator() {
+        return Comparator.comparing(IndexedDoublePair::getIndex);
     }
 }
