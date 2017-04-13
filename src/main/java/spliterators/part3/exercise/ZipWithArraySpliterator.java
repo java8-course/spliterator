@@ -1,5 +1,8 @@
 package spliterators.part3.exercise;
 
+import spliterators.part2.exercise.IndexedDoublePair;
+
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -9,6 +12,7 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     private final Spliterator<A> inner;
     private final B[] array;
+    private int characteristics;
     private final int endIndexExc;
     private int currentIndex;
 
@@ -22,11 +26,14 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
         this.array = array;
         currentIndex = startIndex;
         this.endIndexExc = endIndex;
+
+        this.characteristics = inner.characteristics();
+        if(!inner.hasCharacteristics(NONNULL)) characteristics += NONNULL;
     }
 
     @Override
     public int characteristics() {
-        return inner.characteristics();
+        return characteristics;
     }
 
     @Override
@@ -61,5 +68,11 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     public long estimateSize() {
         if (inner.hasCharacteristics(SIZED)) return Math.min(inner.estimateSize(), endIndexExc - currentIndex+1);
         return endIndexExc - currentIndex+1;
+    }
+
+    @Override
+    public Comparator<Pair<A, B>> getComparator() {
+        if (!inner.hasCharacteristics(SORTED)) throw new UnsupportedOperationException();
+        return (p1, p2) -> inner.getComparator().compare(p1.getA(), p2.getA());
     }
 }
