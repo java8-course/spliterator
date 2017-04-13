@@ -38,9 +38,9 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        for (B b : array) {
+        while (currentIndex < endIndex) {
             currentIndex++;
-            if (!inner.tryAdvance(a -> action.accept(new Pair<A, B>(a, b)))) return;
+            if (!inner.tryAdvance(a -> action.accept(new Pair<A, B>(a, array[currentIndex])))) return;
         }
     }
 
