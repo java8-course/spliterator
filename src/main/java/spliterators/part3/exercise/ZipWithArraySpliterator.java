@@ -51,10 +51,10 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     @Override
     public Spliterator<Pair<A, B>> trySplit() {
 
-        if (array.length - currentIndex < 2) return null;
+        Spliterator<A> splittedInner = inner.trySplit();
+        if (array.length - currentIndex < 2 ||splittedInner==null) return null;
 
-        if (inner.hasCharacteristics(SUBSIZED)) {
-            Spliterator<A> splittedInner = inner.trySplit();
+        if (inner.hasCharacteristics(SUBSIZED)) {;
             currentIndex += splittedInner.estimateSize();
             int start = (int) (currentIndex - splittedInner.estimateSize());
             int end = currentIndex < array.length ?  currentIndex: array.length;
