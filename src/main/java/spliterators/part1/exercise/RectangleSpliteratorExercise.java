@@ -36,7 +36,6 @@ public class RectangleSpliteratorExercise {
         }
     }
 
-
     @Benchmark
     public long baiseline_seq() {
         return Arrays.stream(array)
