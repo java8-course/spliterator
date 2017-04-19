@@ -3,15 +3,16 @@ package spliterators.part1.exercise;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
+    private int startOuterInclusive;
     private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -29,8 +30,19 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int lengh = endOuterExclusive - startOuterInclusive;
+        if(lengh <=1){
+            return null;
+        }
+        int middle = startOuterInclusive + lengh/2;
+
+        final RectangleSpliterator rectangleSpliterator = new
+            RectangleSpliterator(array, startOuterInclusive, middle, startInnerInclusive);
+
+        startOuterInclusive = middle;
+        startInnerInclusive = 0;
+
+        return rectangleSpliterator;
     }
 
     @Override
@@ -40,7 +52,28 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        if(startInnerInclusive < array[0].length){
+            action.accept(array[startOuterInclusive][startInnerInclusive]);
+            startInnerInclusive++;
+            if(startInnerInclusive == array[0].length && startOuterInclusive < endOuterExclusive){
+                startInnerInclusive = 0;
+                startOuterInclusive++;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void forEachRemaining(Consumer<? super Integer> action) {
+        while (startOuterInclusive < endOuterExclusive){
+            while (startInnerInclusive < array[0].length){
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
+                startInnerInclusive++;
+            }
+            startOuterInclusive++;
+            startInnerInclusive = 0;
+        }
+
     }
 }
