@@ -9,9 +9,9 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
+    private int startOuterInclusive;
     private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -29,18 +29,42 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int length = endOuterExclusive - startOuterInclusive;
+        if (length <= 1) return null;
+        int middle = startOuterInclusive + length / 2;
+        RectangleSpliterator rectangleSpliterator = new RectangleSpliterator(array, startOuterInclusive, middle, startInnerInclusive);
+        startOuterInclusive = middle;
+        startInnerInclusive = 0;
+        return rectangleSpliterator;
     }
 
     @Override
     public long estimateSize() {
-        return ((long) endOuterExclusive - startOuterInclusive)*innerLength - startInnerInclusive;
+        return ((long) endOuterExclusive - startOuterInclusive) * innerLength - startInnerInclusive;
     }
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (startInnerInclusive >= array[0].length) return false;
+        action.accept(array[startOuterInclusive][startInnerInclusive]);
+        startInnerInclusive++;
+        if (startInnerInclusive == array[0].length && startOuterInclusive < endOuterExclusive) {
+            startInnerInclusive = 0;
+            startOuterInclusive++;
+        }
+        return true;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
+        while (startOuterInclusive < endOuterExclusive) {
+            if (startInnerInclusive < innerLength) {
+                action.accept(array[startOuterInclusive][startInnerInclusive]);
+                startInnerInclusive += 1;
+            } else {
+                startOuterInclusive += 1;
+                startInnerInclusive = 0;
+            }
+        }
     }
 }
