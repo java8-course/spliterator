@@ -3,18 +3,19 @@ package spliterators.part2.exercise;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.Comparator;
 
 public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSpliterator<IndexedDoublePair> {
 
 
     private final OfDouble inner;
-    private int currentIndex;
+    private long currentIndex;
 
     public ZipWithIndexDoubleSpliterator(OfDouble inner) {
         this(0, inner);
     }
 
-    private ZipWithIndexDoubleSpliterator(int firstIndex, OfDouble inner) {
+    private ZipWithIndexDoubleSpliterator(long firstIndex, OfDouble inner) {
         super(inner.estimateSize(), inner.characteristics());
         currentIndex = firstIndex;
         this.inner = inner;
@@ -22,35 +23,48 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics() | NONNULL;
+
+    }
+
+    @Override
+    public Comparator<? super IndexedDoublePair> getComparator() {
+        if (inner.hasCharacteristics(SORTED)) {
+            return Comparator.comparing(IndexedDoublePair::getValue);
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        boolean res = inner.tryAdvance((Double e) -> action.accept(new IndexedDoublePair(currentIndex, e)));
+        currentIndex += 1;
+        return res;
     }
 
     @Override
     public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining((Double e) -> {
+            action.accept(new IndexedDoublePair(currentIndex, e));
+            currentIndex += 1;
+        });
     }
 
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
-        // TODO
-        // if (inner.hasCharacteristics(???)) {
-        //   use inner.trySplit
-        // } else
-
-        return super.trySplit();
+        if (inner.hasCharacteristics(SUBSIZED)) {
+            OfDouble splitInner = this.inner.trySplit();
+            ZipWithIndexDoubleSpliterator spliterator = new ZipWithIndexDoubleSpliterator(currentIndex, splitInner);
+            currentIndex += splitInner.estimateSize();
+            return spliterator;
+        } else {
+            return super.trySplit();
+        }
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize();
     }
 }

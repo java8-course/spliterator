@@ -5,15 +5,15 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class IndexedPair<T> {
-    private final int index;
+    private final long index;
     private final T value;
 
-    public IndexedPair(int index, T value) {
+    public IndexedPair(long index, T value) {
         this.index = index;
         this.value = value;
     }
 
-    public int getIndex() {
+    public long getIndex() {
         return index;
     }
 
