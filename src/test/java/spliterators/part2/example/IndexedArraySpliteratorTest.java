@@ -30,7 +30,7 @@ public class IndexedArraySpliteratorTest {
         final List<IndexedPair<String>> result1 =
                 Stream.iterate(
                         new IndexedPair<>(0, randomArray[0]),
-                        p -> new IndexedPair<>(p.getIndex() + 1, randomArray[p.getIndex() + 1]))
+                        p -> new IndexedPair<>(p.getIndex() + 1, randomArray[(int)p.getIndex() + 1]))
                         .limit(randomArray.length)
                         .collect(toList());
 
