@@ -1,0 +1,5 @@
+Benchmark                                                    (consume)  (count)  (innerLength)  (length)  (outerLength)  Mode  Cnt    Score    Error  Units
+s.part1.exercise.RectangleSpliteratorExercise.baiseline_par        N/A      N/A            100       N/A            100  avgt   10    0.044 ±  0.001  ms/op
+s.part1.exercise.RectangleSpliteratorExercise.baiseline_seq        N/A      N/A            100       N/A            100  avgt   10    0.016 ±  0.001  ms/op
+s.part1.exercise.RectangleSpliteratorExercise.rectangle_par        N/A      N/A            100       N/A            100  avgt   10    0.040 ±  0.002  ms/op
+s.part1.exercise.RectangleSpliteratorExercise.rectangle_seq        N/A      N/A            100       N/A            100  avgt   10    0.011 ±  0.001  ms/op
