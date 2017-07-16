@@ -9,38 +9,60 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     private final int innerLength;
     private final int[][] array;
-    private final int startOuterInclusive;
-    private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int startInclusive;
+    private int endExclusive;
 
     public RectangleSpliterator(int[][] array) {
-        this(array, 0, array.length, 0);
+        this(array, 0, array.length * array[0].length);
     }
 
-    private RectangleSpliterator(int[][] array, int startOuterInclusive, int endOuterExclusive, int startInnerInclusive) {
+    private RectangleSpliterator(int[][] array, int startInclusive, int endExclusive) {
         super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED | Spliterator.NONNULL);
 
         innerLength = array.length == 0 ? 0 : array[0].length;
         this.array = array;
-        this.startOuterInclusive = startOuterInclusive;
-        this.endOuterExclusive = endOuterExclusive;
-        this.startInnerInclusive = startInnerInclusive;
+        this.startInclusive = startInclusive;
+        this.endExclusive = endExclusive;
     }
 
     @Override
     public OfInt trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        int length = (int) estimateSize();
+
+        if (length < 5) {
+            return null;
+        }
+
+        int mid = startInclusive + length / 2;
+
+        RectangleSpliterator rectangleSpliterator = new RectangleSpliterator(array, startInclusive, mid);
+
+        startInclusive = mid;
+        return rectangleSpliterator;
     }
 
     @Override
     public long estimateSize() {
-        return ((long) endOuterExclusive - startOuterInclusive)*innerLength - startInnerInclusive;
+        return (long) (endExclusive - startInclusive);
     }
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        int i = startInclusive / innerLength;
+        int j = startInclusive - i*innerLength;
+
+        action.accept(array[i][j]);
+
+        return true;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
+        for (int i = startInclusive; i < endExclusive; i++) {
+            int ii = i / innerLength;
+            int jj = i - ii*innerLength;
+
+            action.accept(array[ii][jj]);
+        }
     }
 }
