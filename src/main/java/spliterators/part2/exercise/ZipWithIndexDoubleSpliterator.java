@@ -1,5 +1,6 @@
 package spliterators.part2.exercise;
 
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -8,13 +9,13 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
 
     private final OfDouble inner;
-    private int currentIndex;
+    private long currentIndex;
 
     public ZipWithIndexDoubleSpliterator(OfDouble inner) {
         this(0, inner);
     }
 
-    private ZipWithIndexDoubleSpliterator(int firstIndex, OfDouble inner) {
+    private ZipWithIndexDoubleSpliterator(final long firstIndex, final OfDouble inner) {
         super(inner.estimateSize(), inner.characteristics());
         currentIndex = firstIndex;
         this.inner = inner;
@@ -22,35 +23,41 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics() | DISTINCT;
     }
 
     @Override
-    public boolean tryAdvance(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+    public boolean tryAdvance(final Consumer<? super IndexedDoublePair> action) {
+        return inner.tryAdvance((double v) -> action.accept(new IndexedDoublePair(currentIndex++, v)));
     }
 
     @Override
-    public void forEachRemaining(Consumer<? super IndexedDoublePair> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+    public Comparator<? super IndexedDoublePair> getComparator() {
+        return (o1, o2) -> inner.getComparator().compare(o1.getValue(), o2.getValue());
+    }
+
+    @Override
+    public void forEachRemaining(final Consumer<? super IndexedDoublePair> action) {
+        inner.forEachRemaining((double v) -> action.accept(new IndexedDoublePair(currentIndex++, v)));
     }
 
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
-        // TODO
-        // if (inner.hasCharacteristics(???)) {
-        //   use inner.trySplit
-        // } else
-
-        return super.trySplit();
+        if (inner.hasCharacteristics(SUBSIZED)) {
+            final OfDouble ofDouble = inner.trySplit();
+            if (ofDouble == null) {
+                return null;
+            }
+            final ZipWithIndexDoubleSpliterator res = new ZipWithIndexDoubleSpliterator(currentIndex, ofDouble);
+            currentIndex += estimateSize() / 2;
+            return res;
+        } else {
+            return super.trySplit();
+        }
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.estimateSize();
     }
 }
