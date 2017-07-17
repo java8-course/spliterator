@@ -43,16 +43,16 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
             } else {
                 final int mid = startInnerInclusive + inLength / 2;
                 final RectangleSpliterator res =
-                        new RectangleSpliterator(array, startOuterInclusive, endOuterExclusive, mid, endInnerExclusive);
-                endInnerExclusive = mid;
+                        new RectangleSpliterator(array, startOuterInclusive, endOuterExclusive, startInnerInclusive, mid);
+                startInnerInclusive = mid;
                 return res;
             }
         }
 
         final int mid = startOuterInclusive + length / 2;
         final RectangleSpliterator res =
-                new RectangleSpliterator(array, mid, endOuterExclusive, startInnerInclusive, endInnerExclusive);
-        endOuterExclusive = mid;
+                new RectangleSpliterator(array, startOuterInclusive, mid, startInnerInclusive, endInnerExclusive);
+        startOuterInclusive = mid;
         return res;
     }
 

@@ -15,11 +15,11 @@ public class RectangleSpliteratorTest {
 
     @Before
     public void setup() {
-        final int outerLength = 5;
+        final int outerLength = 100;
         array = new int[outerLength][];
 
         for (int i = 0; i < array.length; i++) {
-            final int innerLength = 10;
+            final int innerLength = 100;
             final int[] inner = new int[innerLength];
             array[i] = inner;
             for (int j = 0; j < inner.length; j++) {
