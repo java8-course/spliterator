@@ -3,6 +3,7 @@ package spliterators.part1.exercise;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
@@ -74,5 +75,14 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
         }
         action.accept(value);
         return true;
+    }
+
+    @Override
+    public void forEachRemaining(final Consumer<? super Integer> action) {
+        for (int i = startOuterInclusive; i < endOuterExclusive; i++) {
+            for (int j = startInnerInclusive; j < endInnerExclusive; j++) {
+                action.accept(array[i][j]);
+            }
+        }
     }
 }
