@@ -7,42 +7,58 @@ import java.util.function.Consumer;
 public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSpliterator<Pair<A, B>> {
 
 
-    private final Spliterator<A> inner;
+    private Spliterator<A> inner;
+    int currentIndex;
     private final B[] array;
 
     public ZipWithArraySpliterator(Spliterator<A> inner, B[] array) {
-        super(Long.MAX_VALUE, 0); // FIXME:
-        // TODO
-        throw new UnsupportedOperationException();
+        this(inner, array, 0);
+    }
+
+    private ZipWithArraySpliterator(Spliterator<A> inner, B[] array, int index) {
+        super(Math.min(inner.estimateSize(), array.length), inner.characteristics());
+        this.inner = inner;
+        this.array = array;
+        this.currentIndex = index;
     }
 
     @Override
     public int characteristics() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.characteristics() & ~Spliterator.SORTED;
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        return inner.tryAdvance(value ->
+                action.accept(
+                        new Pair<>(value, array[currentIndex++])
+                )
+        );
     }
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
-        // TODO
-        throw new UnsupportedOperationException();
+        for (; currentIndex < estimateSize(); ++currentIndex) {
+            inner.tryAdvance(value -> new Pair<>(value, array[currentIndex]));
+        }
     }
 
     @Override
     public Spliterator<Pair<A, B>> trySplit() {
-        // TODO
-        throw new UnsupportedOperationException();
+        if (inner.hasCharacteristics(Spliterator.SUBSIZED)) {
+            long innerSize = inner.estimateSize();
+            Spliterator<A> aSpliterator = inner.trySplit();
+
+            ZipWithArraySpliterator<A, B> abZipWithArraySpliterator = new ZipWithArraySpliterator<>(aSpliterator, array, currentIndex);
+            currentIndex = (int) (currentIndex + innerSize / 2);
+            return  abZipWithArraySpliterator;
+        } else {
+            return super.trySplit();
+        }
     }
 
     @Override
     public long estimateSize() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return Math.min(array.length - currentIndex, inner.estimateSize());
     }
 }
