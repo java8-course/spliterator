@@ -83,4 +83,32 @@ public class ZipWithArraySpliteratorTest {
         assertEquals(sum, res, 0.1);
     }
 
+    @Test
+    public void emptyRight() {
+        maxSize = 10000;
+
+        Double[] array = generateDouble();
+        double sum = StreamSupport.stream(new ZipWithArraySpliterator<>(Arrays.spliterator(array), Arrays.copyOf(array, 0)), true)
+                .mapToDouble(pair -> pair.getA() - pair.getB())
+                .sum();
+
+        double res = 0.0;
+
+        assertEquals(sum, res, 0.1);
+    }
+
+    @Test
+    public void emptLeft() {
+        maxSize = 10000;
+
+        Double[] array = generateDouble();
+        double sum = StreamSupport.stream(new ZipWithArraySpliterator<>(Arrays.spliterator(Arrays.copyOf(array, 0)), array), true)
+                .mapToDouble(pair -> pair.getA() - pair.getB())
+                .sum();
+
+        double res = 0.0;
+
+        assertEquals(sum, res, 0.1);
+    }
+
 }
