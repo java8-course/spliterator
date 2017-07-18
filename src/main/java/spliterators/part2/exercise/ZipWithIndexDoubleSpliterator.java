@@ -23,15 +23,6 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
 
     @Override
     public int characteristics() {
-        inner.characteristics();
-        inner.hasCharacteristics(Spliterator.CONCURRENT);
-        inner.hasCharacteristics(Spliterator.DISTINCT);
-        inner.hasCharacteristics(Spliterator.IMMUTABLE);
-        inner.hasCharacteristics(Spliterator.NONNULL);
-        inner.hasCharacteristics(Spliterator.ORDERED);
-        inner.hasCharacteristics(Spliterator.SIZED);
-        inner.hasCharacteristics(Spliterator.SUBSIZED);
-        inner.hasCharacteristics(Spliterator.SORTED);
         return inner.characteristics() | NONNULL;
     }
 
