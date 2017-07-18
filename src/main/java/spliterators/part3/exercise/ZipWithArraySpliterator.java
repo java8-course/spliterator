@@ -2,47 +2,75 @@ package spliterators.part3.exercise;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSpliterator<Pair<A, B>> {
 
-
     private final Spliterator<A> inner;
     private final B[] array;
+    private final AtomicLong startInclusive;
+    private final long endExclusive;
 
     public ZipWithArraySpliterator(Spliterator<A> inner, B[] array) {
-        super(Long.MAX_VALUE, 0); // FIXME:
+        super(array.length, inner.characteristics());
         // TODO
-        throw new UnsupportedOperationException();
+        this.inner = inner;
+        this.array = array;
+        this.endExclusive = array.length;
+        startInclusive = new AtomicLong();
+    }
+
+    private ZipWithArraySpliterator(Spliterator<A> inner, B[] array, long startInclusive, long endExclusive) {
+        super(array.length, inner.characteristics());
+        // TODO
+        this.inner = inner;
+        this.array = array;
+        this.startInclusive = new AtomicLong(startInclusive);
+        this.endExclusive = endExclusive;
     }
 
     @Override
     public int characteristics() {
         // TODO
-        throw new UnsupportedOperationException();
+        int characteristics = inner.characteristics();
+        if (!inner.hasCharacteristics(SUBSIZED))
+            throw new IllegalStateException();
+        characteristics &= ~SORTED;
+        return characteristics;
     }
 
     @Override
     public boolean tryAdvance(Consumer<? super Pair<A, B>> action) {
         // TODO
-        throw new UnsupportedOperationException();
+        if (startInclusive.get() >= endExclusive) return false;
+
+        inner.tryAdvance(v -> action.accept(
+                new Pair<>(v, array[(int) startInclusive.get()]))
+        );
+        return true;
     }
 
     @Override
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
         // TODO
-        throw new UnsupportedOperationException();
+        inner.forEachRemaining(
+                v -> action.accept(new Pair<>(v, array[(int) startInclusive.get()]))
+        );
     }
 
     @Override
     public Spliterator<Pair<A, B>> trySplit() {
         // TODO
-        throw new UnsupportedOperationException();
+        final Spliterator<A> part = inner.trySplit();
+        final long prevStartInclusive = startInclusive.getAndAdd(part.estimateSize());
+        return new ZipWithArraySpliterator<>(inner, array, prevStartInclusive, startInclusive.get());
     }
 
     @Override
     public long estimateSize() {
         // TODO
-        throw new UnsupportedOperationException();
+        return endExclusive - startInclusive.get();
     }
 }
