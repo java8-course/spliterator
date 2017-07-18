@@ -53,7 +53,6 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
             currentIndex = (int) (currentIndex + innerSize / 2);
             return  abZipWithArraySpliterator;
         } else {
-            //return null;
             return super.trySplit();
         }
     }

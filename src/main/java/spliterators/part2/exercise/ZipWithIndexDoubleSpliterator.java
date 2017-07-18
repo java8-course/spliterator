@@ -1,5 +1,7 @@
 package spliterators.part2.exercise;
 
+import spliterators.part3.exercise.ZipWithArraySpliterator;
+
 import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -45,12 +47,15 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
     @Override
     public Spliterator<IndexedDoublePair> trySplit() {
         if (inner.hasCharacteristics(Spliterator.SUBSIZED)) {
+            long innerSize = inner.estimateSize();
             OfDouble ofDouble = inner.trySplit();
-            return new ZipWithIndexDoubleSpliterator(currentIndex + ofDouble.estimateSize(), ofDouble);
+
+            ZipWithIndexDoubleSpliterator zipWithIndexDoubleSpliterator = new ZipWithIndexDoubleSpliterator(currentIndex, ofDouble);
+            currentIndex = (int) (currentIndex + innerSize / 2);
+            return  zipWithIndexDoubleSpliterator;
         } else {
             return super.trySplit();
         }
-
     }
 
     @Override
