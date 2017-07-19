@@ -45,11 +45,12 @@ public class ZipWithIndexDoubleSpliterator extends Spliterators.AbstractSplitera
     public Spliterator<IndexedDoublePair> trySplit() {
         if (inner.hasCharacteristics(SUBSIZED)) {
             final OfDouble ofDouble = inner.trySplit();
+            final long size = estimateSize();
             if (ofDouble == null) {
                 return null;
             }
             final ZipWithIndexDoubleSpliterator res = new ZipWithIndexDoubleSpliterator(currentIndex, ofDouble);
-            currentIndex += estimateSize() / 2;
+            currentIndex += size / 2;
             return res;
         } else {
             return super.trySplit();
