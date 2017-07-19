@@ -2,62 +2,64 @@ package spliterators.part4.data;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.Stack;
 import java.util.function.Consumer;
 
 public class NodeSpliterator<T> extends Spliterators.AbstractSpliterator<Node<T>> {
 
-    private Node<T> node;
-    private Stack<Node<T>> toDo;
+    private final Node<T> node;
+    private boolean rightDone, leftDone;
 
-    public NodeSpliterator(Node<T> node) {
-        super(Integer.MAX_VALUE, IMMUTABLE
-                | CONCURRENT);
+    public NodeSpliterator(final Node<T> node) {
+        super(Integer.MAX_VALUE, IMMUTABLE);
         this.node = node;
-        toDo = new Stack<>();
     }
 
     @Override
     public void forEachRemaining(final Consumer<? super Node<T>> action) {
-        forEach(node, toDo);
-        toDo.forEach(n -> {
-            if (n != null) {
-                action.accept(n);
-            }
-        });
+        if (node != null) {
+            forEach(node, action);
+        }
     }
 
-    private void forEach(final Node<T> node, final Stack<Node<T>> stack) {
-        stack.add(node);
+    private void forEach(final Node<T> node, final Consumer<? super Node<T>> action) {
+        action.accept(node);
         if (node.getLeft() != null) {
-            forEach(node.getLeft(), stack);
+            forEach(node.getLeft(), action);
         }
         if (node.getRight() != null) {
-            forEach(node.getRight(), stack);
+            forEach(node.getRight(), action);
         }
     }
 
     @Override
     public Spliterator<Node<T>> trySplit() {
-        if ((node.getLeft() != null)
-                && (node.getRight() != null)) {
-            final NodeSpliterator<T> left = new NodeSpliterator<>(node.getLeft());
-            toDo.add(node);
-            node = node.getRight();
-            return left;
+        if ((node == null)
+                ||
+                (rightDone && leftDone)) {
+            return null;
         }
-        return null;
+        if (!leftDone) {
+            leftDone = true;
+            return new NodeSpliterator<>(node.getLeft());
+        } else {
+            rightDone = true;
+            return new NodeSpliterator<>(node.getRight());
+        }
     }
 
     @Override
     public boolean tryAdvance(final Consumer<? super Node<T>> action) {
-        if (!toDo.isEmpty()) {
-            final Node<T> pop = toDo.pop();
-            if (pop != null) {
-                action.accept(pop);
-            }
+        if (!leftDone) {
+            action.accept(node.getLeft());
+            leftDone = true;
+        } else if (!rightDone) {
+            action.accept(node.getRight());
+            rightDone = true;
+        } else {
+            action.accept(node);
+            return false;
         }
-        return toDo.isEmpty();
+        return true;
     }
 
     @Override
