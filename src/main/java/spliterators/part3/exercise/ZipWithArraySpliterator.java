@@ -49,6 +49,7 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
         inner.tryAdvance(v -> action.accept(
                 new Pair<>(v, array[(int) startInclusive.get()]))
         );
+        startInclusive.incrementAndGet();
         return true;
     }
 
@@ -56,7 +57,8 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
         // TODO
         inner.forEachRemaining(
-                v -> action.accept(new Pair<>(v, array[(int) startInclusive.get()]))
+                v ->
+                        action.accept(new Pair<>(v, array[(int) startInclusive.getAndIncrement()]))
         );
     }
 
@@ -64,8 +66,10 @@ public class ZipWithArraySpliterator<A, B> extends Spliterators.AbstractSplitera
     public Spliterator<Pair<A, B>> trySplit() {
         // TODO
         final Spliterator<A> part = inner.trySplit();
-        final long prevStartInclusive = startInclusive.getAndAdd(part.estimateSize());
-        return new ZipWithArraySpliterator<>(inner, array, prevStartInclusive, startInclusive.get());
+        if (part != null) {
+            final long prevStartInclusive = startInclusive.getAndAdd(part.estimateSize());
+            return new ZipWithArraySpliterator<>(part, array, prevStartInclusive, startInclusive.get());
+        } else return null;
     }
 
     @Override
