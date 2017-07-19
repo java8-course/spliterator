@@ -27,9 +27,7 @@ public class Node<T> {
         return right;
     }
 
-    public Stream<T> stream() {
-        // TODO
-        throw new UnsupportedOperationException();
-        //return StreamSupport.stream(new NodeSplitertor(this));
+    public Stream<Node<T>> stream(boolean isParallel) {
+        return StreamSupport.stream(new NodeSpliterator<>(this), isParallel);
     }
 }
