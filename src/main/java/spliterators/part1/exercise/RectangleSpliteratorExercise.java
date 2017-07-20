@@ -15,10 +15,10 @@ import java.util.stream.StreamSupport;
 @State(Scope.Thread)
 public class RectangleSpliteratorExercise {
 
-    @Param({"100"})
+    @Param({"13000"})
     public int outerLength;
 
-    @Param({"100"})
+    @Param({"13000"})
     public int innerLength;
 
     public int[][] array;
