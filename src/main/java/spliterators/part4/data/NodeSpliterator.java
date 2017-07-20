@@ -11,8 +11,7 @@ public class NodeSpliterator<T> extends Spliterators.AbstractSpliterator<T> {
     private final Stack<Node<T>> toDo;
 
     public NodeSpliterator(final Node<T> node) {
-        super(Integer.MAX_VALUE, IMMUTABLE
-                | CONCURRENT);
+        super(Integer.MAX_VALUE, IMMUTABLE);
         this.node = node;
         toDo = new Stack<>();
     }
@@ -23,9 +22,7 @@ public class NodeSpliterator<T> extends Spliterators.AbstractSpliterator<T> {
             forEach(node, toDo);
         }
         toDo.forEach(n -> {
-            if (n != null) {
-                action.accept(n.getValue());
-            }
+            action.accept(n.getValue());
         });
     }
 
@@ -56,9 +53,7 @@ public class NodeSpliterator<T> extends Spliterators.AbstractSpliterator<T> {
             return false;
         }
         final Node<T> pop = toDo.pop();
-        if (pop != null) {
-            action.accept(pop.getValue());
-        }
+        action.accept(pop.getValue());
         return true;
     }
 

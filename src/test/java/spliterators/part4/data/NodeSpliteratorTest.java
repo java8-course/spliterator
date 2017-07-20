@@ -67,18 +67,6 @@ public class NodeSpliteratorTest {
     }
 
     @Test
-    public void testSeqUnbalacnced() {
-        for (int i = 0; i < LIMIT; i++) {
-            expected.add(addRandom(head));
-        }
-
-        final Set<Integer> collect = head.stream(false).map(Node::getValue).collect(Collectors.toSet());
-
-        assertEquals(collect, expected);
-
-    }
-
-    @Test
     public void testPar() {
         final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
 
@@ -93,18 +81,6 @@ public class NodeSpliteratorTest {
         }
 
         final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
-
-        assertEquals(collect, expected);
-
-    }
-
-    @Test
-    public void testParUnBalanced() {
-        for (int i = 0; i < LIMIT; i++) {
-            expected.add(addRandom(head));
-        }
-
-        final Set<Integer> collect = head.stream(true).map(Node::getValue).collect(Collectors.toSet());
 
         assertEquals(collect, expected);
 
