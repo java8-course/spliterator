@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +26,20 @@ public class NodeSpliteratorTest {
         return new Node<>(mid, l, r);
     }
 
+    private int addRandom(Node<Integer> node) {
+        if ((node.getRight() == null) || (node.getLeft() == null)) {
+            final int add = ThreadLocalRandom.current().nextInt();
+            node.setNullChild(new Node<>(add, null, null));
+            return add;
+        }
+        final int res = LIMIT + ThreadLocalRandom.current().nextInt();
+        if (res > 0) {
+            return addRandom(node.getLeft());
+        } else {
+            return addRandom(node.getRight());
+        }
+    }
+
     @Before
     public void setUp() {
         head = build(0, LIMIT);
@@ -33,7 +48,19 @@ public class NodeSpliteratorTest {
 
     @Test
     public void testSeq() {
-        final Set<Integer> collect = head.stream(false).map(Node::getValue).collect(Collectors.toSet());
+        final Set<Integer> collect = head.stream(false).collect(Collectors.toSet());
+
+        assertEquals(collect, expected);
+
+    }
+
+    @Test
+    public void testSeqUnbalacnced() {
+        for (int i = 0; i < LIMIT; i++) {
+            expected.add(addRandom(head));
+        }
+
+        final Set<Integer> collect = head.stream(false).collect(Collectors.toSet());
 
         assertEquals(collect, expected);
 
@@ -41,7 +68,19 @@ public class NodeSpliteratorTest {
 
     @Test
     public void testPar() {
-        final Set<Integer> collect = head.stream(true).map(Node::getValue).collect(Collectors.toSet());
+        final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
+
+        assertEquals(collect, expected);
+
+    }
+
+    @Test
+    public void testParUnBalanced() {
+        for (int i = 0; i < LIMIT; i++) {
+            expected.add(addRandom(head));
+        }
+
+        final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
 
         assertEquals(collect, expected);
 
