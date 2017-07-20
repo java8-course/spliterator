@@ -1,5 +1,6 @@
 package spliterators.part2.exercise;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,11 +31,24 @@ public class RectanbleSpliteratorTest {
         }
         public F getFirst() { return first; }
         public S getSecond() { return second; }
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("first", first)
+                    .append("second", second)
+                    .toString();
+        }
+        @Override
+        public boolean equals(Object p) {
+            return Pair.class.isInstance(p) &&
+                    this.first.equals(((Pair) p).first)
+                && this.second.equals(((Pair) p).second);
+        }
     }
 
     @Test
     public void comparePair() {
-        int width = 100, height = 100;
+        int width = 203, height = 104;
         final int[][] randomArray = getRandomArray(width, height);
 
         Integer expected = 0;
@@ -46,11 +60,27 @@ public class RectanbleSpliteratorTest {
 
         final Pair<Integer, String> actual =
                 StreamSupport.stream(new RectangleSpliterator(randomArray), true)
-                .map(p -> new Pair<>(p + 1, p.toString()))
-                .reduce((p1, p2) -> new Pair<>(p1.getFirst() + p2.getFirst(), "String"))
-                                        .orElseThrow(NullPointerException::new);
+                        .map(p -> new Pair<>(p + 1, p.toString()))
+                        .reduce((p1, p2) -> new Pair<>(p1.getFirst() + p2.getFirst(), "String"))
+                        .orElse(new Pair<>(0, ""));
 
         assertEquals(expected, actual.getFirst());
+    }
+
+    @Test
+    public void zeroLength() {
+        int width = 0, height = 0;
+        final int[][] randomArray = getRandomArray(width, height);
+
+        final Pair<Integer, String> expected = new Pair<>(0, "");
+
+        final Pair<Integer, String> actual =
+                StreamSupport.stream(new RectangleSpliterator(randomArray), true)
+                .map(p -> new Pair<>(p + 1, p.toString()))
+                .reduce((p1, p2) -> new Pair<>(p1.getFirst() + p2.getFirst(), "String"))
+                                        .orElse(new Pair<>(0, ""));
+
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -68,7 +98,7 @@ public class RectanbleSpliteratorTest {
         final Integer actual =
                 StreamSupport.stream(new RectangleSpliterator(randomArray), true)
                         .reduce((p1, p2) -> p1 + p2)
-                        .orElseThrow(NullPointerException::new);
+                        .orElse(0);
 
         assertEquals(expected, actual);
     }
