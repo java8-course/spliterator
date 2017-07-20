@@ -7,11 +7,11 @@ import java.util.function.IntConsumer;
 
 public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
-    private final int innerLength;
-    private final int[][] array;
-    private final int startOuterInclusive;
-    private final int endOuterExclusive;
-    private final int startInnerInclusive;
+    private int innerLength;
+    private int[][] array;
+    private int startOuterInclusive;
+    private int endOuterExclusive;
+    private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
         this(array, 0, array.length, 0);
@@ -30,7 +30,14 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     @Override
     public OfInt trySplit() {
         // TODO
-        throw new UnsupportedOperationException();
+        final int outerLen = endOuterExclusive - startOuterInclusive;
+        if (outerLen <= 1) return null;
+
+        final int outerMid = startOuterInclusive + outerLen/2;
+
+        final RectangleSpliterator res = new RectangleSpliterator(array, startOuterInclusive, outerMid, startInnerInclusive);
+        startOuterInclusive = outerMid;
+        return res;
     }
 
     @Override
@@ -40,7 +47,26 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
+        if (startOuterInclusive >= endOuterExclusive
+                && startInnerInclusive >= innerLength)
+            return false;
+
+        for (int i = startInnerInclusive; i < innerLength; i++) {
+            final int value = array[startOuterInclusive][startInnerInclusive];
+            startInnerInclusive++;
+            action.accept(value);
+        }
+
+        return true;
+    }
+
+    @Override
+    public void forEachRemaining(IntConsumer action) {
         // TODO
-        throw new UnsupportedOperationException();
+        for (int i = startOuterInclusive; i < endOuterExclusive; i++)
+            for (int j = startInnerInclusive; j < innerLength; j++)
+                action.accept(array[i][j]);
+
+        startOuterInclusive = endOuterExclusive;
     }
 }
