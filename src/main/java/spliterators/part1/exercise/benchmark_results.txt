@@ -1,0 +1,5 @@
+Benchmark                                   (innerLength)  (outerLength)  Mode  Cnt   Score   Error  Units
+RectangleSpliteratorExercise.baiseline_par          13000          13000  avgt   10  46.978 ± 2.854  ms/op
+RectangleSpliteratorExercise.baiseline_seq          13000          13000  avgt   10  77.890 ± 2.696  ms/op
+RectangleSpliteratorExercise.rectangle_par          13000          13000  avgt   10  48.243 ± 1.727  ms/op
+RectangleSpliteratorExercise.rectangle_seq          13000          13000  avgt   10  80.318 ± 3.265  ms/op
