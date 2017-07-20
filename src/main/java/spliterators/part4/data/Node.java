@@ -6,8 +6,8 @@ import java.util.stream.StreamSupport;
 
 public class Node<T> {
     private final T value;
-    private final Node<T> left;
-    private final Node<T> right;
+    private Node<T> left;
+    private Node<T> right;
 
     public Node(T value, Node<T> left, Node<T> right) {
         this.value = Objects.requireNonNull(value);
@@ -27,9 +27,15 @@ public class Node<T> {
         return right;
     }
 
-    public Stream<T> stream() {
-        // TODO
-        throw new UnsupportedOperationException();
-        //return StreamSupport.stream(new NodeSplitertor(this));
+    public Stream<T> stream(boolean isParallel) {
+        return StreamSupport.stream(new NodeSpliterator<>(this), isParallel);
+    }
+
+    public void setNullChild(final Node<T> node) {
+        if (right == null) {
+            right = node;
+        } else {
+            left = node;
+        }
     }
 }
