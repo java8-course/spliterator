@@ -31,7 +31,7 @@ public class ZipWithArraySpliteratorTest {
         final List<Pair<Integer, Integer>> pairs = new ArrayList<>();
 //        getPairs(spliterator, pairs);
 
-        List<Pair<Integer, Integer>> actual = StreamSupport.stream(spliterator, true)
+        List<Pair<Integer, Integer>> actual = StreamSupport.stream(spliterator, false)
 //                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
 //                .map(Pair::toString)
                 .collect(Collectors.toList());
