@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertEquals;
 
 public class NodeSpliteratorTest {
-    private  Node<Integer> head;
-    private final static int LIMIT = 10000;
+    private Node<Integer> head;
+    private final static int LIMIT = 1000;
     private Set<Integer> expected;
 
     private Node<Integer> build(int left, int right) {
@@ -43,7 +43,7 @@ public class NodeSpliteratorTest {
     @Before
     public void setUp() {
         head = build(0, LIMIT);
-       expected = Stream.iterate(0, i -> i + 1).limit(LIMIT + 1).collect(Collectors.toSet());
+        expected = Stream.iterate(0, i -> i + 1).limit(LIMIT + 1).collect(Collectors.toSet());
     }
 
     @Test
@@ -67,6 +67,18 @@ public class NodeSpliteratorTest {
     }
 
     @Test
+    public void testSeqUnbalacnced() {
+        for (int i = 0; i < LIMIT; i++) {
+            expected.add(addRandom(head));
+        }
+
+        final Set<Integer> collect = head.stream(false).map(Node::getValue).collect(Collectors.toSet());
+
+        assertEquals(collect, expected);
+
+    }
+
+    @Test
     public void testPar() {
         final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
 
@@ -81,6 +93,18 @@ public class NodeSpliteratorTest {
         }
 
         final Set<Integer> collect = head.stream(true).collect(Collectors.toSet());
+
+        assertEquals(collect, expected);
+
+    }
+
+    @Test
+    public void testParUnBalanced() {
+        for (int i = 0; i < LIMIT; i++) {
+            expected.add(addRandom(head));
+        }
+
+        final Set<Integer> collect = head.stream(true).map(Node::getValue).collect(Collectors.toSet());
 
         assertEquals(collect, expected);
 
