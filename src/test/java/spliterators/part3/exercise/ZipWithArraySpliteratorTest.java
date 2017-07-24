@@ -22,7 +22,7 @@ public class ZipWithArraySpliteratorTest {
         return result;
     }
 
-    private List<Pair<String, String>> combaineToPairs(String[] array1, String[] array2) {
+    private List<Pair<String, String>> combineToPairs(String[] array1, String[] array2) {
         List<Pair<String, String>> list = new ArrayList<>();
         int minLength = Math.min(array1.length, array2.length);
         for (int i = 0; i < minLength; i++) {
@@ -52,17 +52,18 @@ public class ZipWithArraySpliteratorTest {
     public void test1() {
         String[] largeArray = generateStringArrayWithSize(10);
         String[] smallArray = generateStringArrayWithSize(5);
-        List<Pair<String, String>> expected = combaineToPairs(largeArray, smallArray);
+        List<Pair<String, String>> expected1 = combineToPairs(largeArray, smallArray);
+        List<Pair<String, String>> expected2 = combineToPairs(smallArray, largeArray);
 
         Spliterator<String> spliterator1 = Arrays.spliterator(largeArray);
         List<Pair<String, String>> result1 = StreamSupport.stream(new ZipWithArraySpliterator<>(spliterator1, smallArray), true)
                 .collect(Collectors.toList());
-        assertThat(result1, Is.is(expected));
+        assertThat(result1, Is.is(expected1));
 
 
         Spliterator<String> spliterator2 = Arrays.spliterator(smallArray);
-        List<Pair<String, String>> result2 = StreamSupport.stream(new ZipWithArraySpliterator<>(spliterator2, smallArray), true)
+        List<Pair<String, String>> result2 = StreamSupport.stream(new ZipWithArraySpliterator<>(spliterator2, largeArray), true)
                 .collect(Collectors.toList());
-        assertThat(result2, Is.is(expected));
+        assertThat(result2, Is.is(expected2));
     }
 }
