@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.*;
+
 public class ZipWithArraySpliteratorTest {
 
     private Integer[] getRandomArray(int length) {
@@ -23,34 +26,62 @@ public class ZipWithArraySpliteratorTest {
     }
 
     @Test
-    public void zerosSuccess() {
-        final Integer[] randomArray = getRandomArray(10);
+    public void innerIsOfGreaterLengthSuccess() {
+        final Integer[] innerArray = getRandomArray(30);
         final Integer[] array = getRandomArray(10);
-        final ZipWithArraySpliterator<Integer, Integer> spliterator = new ZipWithArraySpliterator<>(
-                Spliterators.spliterator(randomArray, 0), array);
-        final List<Pair<Integer, Integer>> pairs = new ArrayList<>();
-//        getPairs(spliterator, pairs);
 
-        List<Pair<Integer, Integer>> actual = StreamSupport.stream(spliterator, false)
-//                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
-//                .map(Pair::toString)
+        final ZipWithArraySpliterator<Integer, Integer> spliterator = new ZipWithArraySpliterator<>(
+                Spliterators.spliterator(innerArray, 0), array);
+
+        final List<String> actual = StreamSupport.stream(spliterator, false)
+                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
+                .map(Pair::toString)
                 .collect(Collectors.toList());
-        System.out.println(pairs);
+        assertThat(actual.size(), is(10));
     }
 
-    private void getPairs(Spliterator<Pair<Integer, Integer>> spliterator, List<Pair<Integer, Integer>> list) {
-        final Spliterator<Pair<Integer, Integer>> newSpliterator = spliterator.trySplit();
-        if (newSpliterator != null) {
-            getPairs(newSpliterator, list);
-            getPairs(spliterator, list);
-        } else {
-            AtomicInteger first = new AtomicInteger();
-            AtomicInteger second = new AtomicInteger();
-            spliterator.tryAdvance(p -> {
-                first.set(p.getA());
-                second.set(p.getB());
-            });
-            list.add(new Pair<>(first.get(), second.get()));
-        }
+    @Test
+    public void ArrayIsOfGreaterLengthSuccess() {
+        final Integer[] innerArray = getRandomArray(10);
+        final Integer[] array = getRandomArray(30);
+
+        final ZipWithArraySpliterator<Integer, Integer> spliterator = new ZipWithArraySpliterator<>(
+                Spliterators.spliterator(innerArray, 0), array);
+
+        final List<String> actual = StreamSupport.stream(spliterator, false)
+                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
+                .map(Pair::toString)
+                .collect(Collectors.toList());
+        assertThat(actual.size(), is(10));
+    }
+
+    @Test
+    public void nonzeroLengthSuccess() {
+        final Integer[] innerArray = getRandomArray(10);
+        final Integer[] array = getRandomArray(10);
+
+        final ZipWithArraySpliterator<Integer, Integer> spliterator = new ZipWithArraySpliterator<>(
+                Spliterators.spliterator(innerArray, 0), array);
+
+        final List<String> actual = StreamSupport.stream(spliterator, false)
+                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
+                .map(Pair::toString)
+                .collect(Collectors.toList());
+        assertThat(actual.size(), is(10));
+    }
+
+    @Test
+    public void zeroLengthSuccess() {
+        final Integer[] innerArray = getRandomArray(0);
+        final Integer[] array = getRandomArray(0);
+
+        final ZipWithArraySpliterator<Integer, Integer> spliterator = new ZipWithArraySpliterator<>(
+                Spliterators.spliterator(innerArray, 0), array);
+
+        final List<String> actual = StreamSupport.stream(spliterator, false)
+                .map(p -> new Pair<>(p.getA().hashCode() + 1, p.getB() + 1))
+                .map(Pair::toString)
+                .collect(Collectors.toList());
+        assertThat(actual.size(), is(0));
     }
 }
