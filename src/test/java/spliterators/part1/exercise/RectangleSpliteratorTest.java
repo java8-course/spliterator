@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
@@ -24,19 +25,30 @@ public class RectangleSpliteratorTest {
 
     @Test
     public void trySplit() {
-        int[][] arr = getRectangleArray(5, 10);
+        int x = 5;
+        int y = 10;
+        int[][] arr = getRectangleArray(x, y);
 
-        RectangleSpliterator splitIterator = new RectangleSpliterator(arr);
-        splitIterator.estimateSize();
+        final long[] expected = {0};
+        traverse(arr,x,y,v-> expected[0] +=v);
 
+        long sum1 = StreamSupport.intStream(new RectangleSpliterator(arr), false)
+                .asLongStream()
+                .sum();
 
+        assertEquals(expected[0],sum1);
+
+        long sum2 = StreamSupport.intStream(new RectangleSpliterator(arr), true)
+                .asLongStream()
+                .sum();
+        assertEquals(expected[0],sum2);
     }
 
     @Test
     public void tryAdvance() {
         int x = 5;
         int y = 10;
-        int[][] arr = getRectangleArray(5, 3);
+        int[][] arr = getRectangleArray(x, y);
         RectangleSpliterator splitIterator = new RectangleSpliterator(arr);
         traverse(arr, x, y, integer -> {
             splitIterator.tryAdvance((IntConsumer) expectable -> {

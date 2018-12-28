@@ -1,8 +1,6 @@
 package spliterators.part1.exercise;
 
 
-import spliterators.part1.example.ArrayExample;
-
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.IntConsumer;
@@ -12,7 +10,7 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     private final int innerLength;
     private final int[][] array;
     private int startOuterInclusive;
-    private final int endOuterExclusive;
+    private int endOuterExclusive;
     private int startInnerInclusive;
 
     public RectangleSpliterator(int[][] array) {
@@ -30,18 +28,28 @@ public class RectangleSpliterator extends Spliterators.AbstractIntSpliterator {
     }
 
 
-    private int getInnerLength() {
+    private int getOuterLength() {
         return endOuterExclusive - startOuterInclusive;
     }
 
-    private int getOuterLength() {
+    private int getInnerLength() {
         return innerLength - startInnerInclusive;
     }
 
 
     @Override
     public OfInt trySplit() {
-        throw new UnsupportedOperationException();
+        int innerSize = getInnerLength();
+        int outerSize = getOuterLength();
+        if(outerSize<2){
+            return null;
+        }
+
+        final int mid = startOuterInclusive + outerSize/2;
+
+        final RectangleSpliterator res = new RectangleSpliterator(array, startOuterInclusive, mid,0);
+        startOuterInclusive = mid;
+        return res;
     }
 
     @Override

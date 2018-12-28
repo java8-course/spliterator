@@ -8,11 +8,24 @@ public class Node<T> {
     private final T value;
     private final Node<T> left;
     private final Node<T> right;
+    private int size = 1;
+
+    public Node(T value) {
+        this(value, null, null);
+    }
 
     public Node(T value, Node<T> left, Node<T> right) {
         this.value = Objects.requireNonNull(value);
         this.left = left;
         this.right = right;
+
+        if (this.left != null) {
+            size += this.left.size();
+        }
+
+        if (this.right != null) {
+            size += this.right.size();
+        }
     }
 
     public T getValue() {
@@ -27,9 +40,11 @@ public class Node<T> {
         return right;
     }
 
-    public Stream<T> stream() {
-        // TODO
-        throw new UnsupportedOperationException();
-        //return StreamSupport.stream(new NodeSplitertor(this));
+    public int size() {
+        return size;
+    }
+
+    public Stream<T> stream(boolean parallel) {
+        return StreamSupport.stream(new NodeSpliterator(this), parallel);
     }
 }
